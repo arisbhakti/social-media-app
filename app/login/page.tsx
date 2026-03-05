@@ -12,11 +12,19 @@ export default function LoginPage() {
     <div className="relative min-h-screen overflow-hidden bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,var(--base-pure-black)_0%,var(--base-pure-black)_58%,rgba(20,7,47,0.9)_78%,rgba(105,54,242,0.86)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,var(--base-pure-black)_0%,var(--base-pure-black)_64%,rgba(0,0,0,0.98)_100%)]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[48vh] bg-[radial-gradient(98%_70%_at_50%_0%,rgba(0,0,0,0.98)_24%,rgba(0,0,0,0.76)_45%,rgba(0,0,0,0)_80%)]"
+        className="pointer-events-none absolute bottom-[-52vh] left-1/2 h-[110vh] w-[234vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(98%_90%_at_50%_8%,rgba(5,3,14,0.98)_0%,rgba(14,6,36,0.96)_24%,rgba(31,13,74,0.92)_44%,rgba(50,23,112,0.88)_58%,rgba(73,36,157,0.86)_70%,rgba(95,49,214,0.84)_82%,rgba(118,72,246,0.82)_92%,rgba(127,81,249,0.8)_100%)] blur-[34px]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[-34vh] left-1/2 h-[90vh] w-[204vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(72%_58%_at_50%_100%,rgba(127,81,249,0.8)_0%,rgba(127,81,249,0.6)_34%,rgba(127,81,249,0.36)_58%,rgba(127,81,249,0.16)_78%,rgba(127,81,249,0)_100%)] blur-[56px]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[20vh] left-1/2 h-[58vh] w-[164vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(76%_76%_at_50%_46%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.92)_34%,rgba(0,0,0,0.3)_68%,rgba(0,0,0,0)_100%)] blur-[28px]"
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">
@@ -30,7 +38,9 @@ export default function LoginPage() {
                 height={34}
                 priority
               />
-              <span className="display-md leading-none font-bold">Sociality</span>
+              <span className="display-md leading-none font-bold">
+                Sociality
+              </span>
             </div>
             <h1 className="display-lg leading-none font-bold">Welcome Back!</h1>
           </header>
@@ -52,7 +62,10 @@ export default function LoginPage() {
             </div>
 
             <div className="grid gap-2">
-              <label className="text-lg leading-none font-bold" htmlFor="password">
+              <label
+                className="text-lg leading-none font-bold"
+                htmlFor="password"
+              >
                 Password
               </label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
