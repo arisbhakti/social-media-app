@@ -1,10 +1,26 @@
 @import "tailwindcss";
 
-:root {
-  --font-sfpro-fallback:
-    "SF Pro Display", "SF Pro Text", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+@font-face {
+  font-family: "sfpro";
+  src: url("./fonts/SFPRODISPLAYREGULAR.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+}
 
+@font-face {
+  font-family: "sfpro";
+  src: url("./fonts/SFPRODISPLAYMEDIUM.otf") format("opentype");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "sfpro";
+  src: url("./fonts/SFPRODISPLAYBOLD.otf") format("opentype");
+  font-style: normal;
+  font-weight: 700;
+}
+:root {
   --background: #fdfdfd;
   --foreground: #0a0d12;
 
@@ -33,10 +49,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sfpro, var(--font-sfpro-fallback));
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -63,16 +75,12 @@
 
 html,
 body {
-  font-family: var(--font-sfpro, var(--font-sfpro-fallback)) !important;
+  font-family: "sfpro" !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-}
-
-.font-sans {
-  font-family: var(--font-sfpro, var(--font-sfpro-fallback)) !important;
 }
 
 .text-xs {

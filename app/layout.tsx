@@ -1,17 +1,5 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-
-const sfPro = localFont({
-  src: [
-    { path: "./fonts/SFPRODISPLAYREGULAR.otf", weight: "400", style: "normal" },
-    { path: "./fonts/SFPRODISPLAYMEDIUM.otf", weight: "500", style: "normal" },
-    { path: "./fonts/SFPRODISPLAYBOLD.otf", weight: "700", style: "normal" },
-  ],
-  variable: "--font-sfpro",
-  display: "swap",
-  fallback: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,9 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sfPro.variable} antialiased font-sans`}>
-        {children}
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
