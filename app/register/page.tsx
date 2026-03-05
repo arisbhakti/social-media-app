@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
@@ -28,8 +29,8 @@ export default function LoginPage() {
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">
-        <section className="grid w-full max-w-[700px] gap-10 rounded-[30px] border border-[rgba(246,249,254,0.16)] bg-[rgba(3,6,12,0.82)] px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-[456px] md:max-w-none md:rounded-[22px] md:px-6 md:py-7">
-          <header className="grid gap-8">
+        <section className="grid w-full max-w-[700px] gap-8 rounded-[30px] border border-[rgba(246,249,254,0.16)] bg-[rgba(3,6,12,0.82)] px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-[560px] md:max-w-none md:rounded-[22px] md:px-6 md:py-7">
+          <header className="grid place-items-center gap-8">
             <div className="flex items-center gap-3">
               <Image
                 src="/icon-sociality.svg"
@@ -38,24 +39,37 @@ export default function LoginPage() {
                 height={34}
                 priority
               />
-              <span className="display-md leading-none font-bold">
-                Sociality
-              </span>
+              <span className="display-md leading-none font-bold">Sociality</span>
             </div>
-            <h1 className="display-lg leading-none font-bold">Welcome Back!</h1>
+            <h1 className="display-lg leading-none font-bold">Register</h1>
           </header>
 
           <form className="grid gap-6">
             <div className="grid gap-2">
-              <label className="text-lg leading-none font-bold" htmlFor="email">
-                Email
+              <label className="text-lg leading-none font-bold" htmlFor="name">
+                Name
               </label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
                 <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
+                  id="name"
+                  type="text"
+                  autoComplete="name"
                   placeholder="Enter your email"
+                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <label className="text-lg leading-none font-bold" htmlFor="username">
+                Username
+              </label>
+              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+                <input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="Enter your username"
                   className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
                 />
               </div>
@@ -64,15 +78,33 @@ export default function LoginPage() {
             <div className="grid gap-2">
               <label
                 className="text-lg leading-none font-bold"
-                htmlFor="password"
+                htmlFor="number-phone"
+              >
+                Number Phone
+              </label>
+              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+                <input
+                  id="number-phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="Enter your number phone"
+                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <label
+                className="text-lg leading-none font-bold"
+                htmlFor="register-password"
               >
                 Password
               </label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
                 <input
-                  id="password"
+                  id="register-password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   placeholder="Enter your password"
                   className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
                 />
@@ -93,18 +125,52 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="grid gap-2">
+              <label
+                className="text-lg leading-none font-bold"
+                htmlFor="confirm-password"
+              >
+                Confirm Password
+              </label>
+              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+                <input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Enter your confirm password"
+                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:text-[var(--neutral-300)]"
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password value"
+                      : "Show confirm password value"
+                  }
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-6 w-6" strokeWidth={2.2} />
+                  ) : (
+                    <Eye className="h-6 w-6" strokeWidth={2.2} />
+                  )}
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
               className="text-xl flex h-16 items-center justify-center rounded-full bg-[linear-gradient(90deg,var(--primary-200)_0%,var(--primary-300)_100%)] font-bold text-[var(--base-pure-white)] transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             >
-              Login
+              Submit
             </button>
           </form>
 
           <p className="text-xl flex items-center justify-center gap-2 leading-none font-bold text-[var(--neutral-700)]">
-            <span>Don&apos;t have an account?</span>
-            <Link href="/register" className="text-[var(--primary-200)]">
-              Register
+            <span>Already have an account?</span>
+            <Link href="/login" className="text-[var(--primary-200)]">
+              Log in
             </Link>
           </p>
         </section>
