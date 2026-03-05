@@ -1,26 +1,136 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-sfpro-fallback:
+    "SF Pro Display", "SF Pro Text", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --background: #fdfdfd;
+  --foreground: #0a0d12;
+
+  --primary-300: #6936f2;
+  --primary-200: #7f51f9;
+  --primary-100: #f6f9fe;
+
+  --neutral-25: #fdfdfd;
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e9eaeb;
+  --neutral-300: #d5d7da;
+  --neutral-400: #a4a7ae;
+  --neutral-500: #717680;
+  --neutral-600: #535862;
+  --neutral-700: #414651;
+  --neutral-800: #252b37;
+  --neutral-900: #181d27;
+  --neutral-950: #0a0d12;
+
+  --green: #079455;
+  --yellow: #fdb022;
+  --red: #d9206e;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sfpro, var(--font-sfpro-fallback));
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    --neutral-25: #0a0d12;
+    --neutral-50: #181d27;
+    --neutral-100: #252b37;
+    --neutral-200: #414651;
+    --neutral-300: #535862;
+    --neutral-400: #717680;
+    --neutral-500: #a4a7ae;
+    --neutral-600: #aaaaaa;
+    --neutral-700: #e9eaeb;
+    --neutral-800: #dfdfdf;
+    --neutral-900: #dcdcdc;
+    --neutral-950: #fafafa;
+
+    --red: #b41759;
   }
+}
+
+html,
+body {
+  font-family: var(--font-sfpro, var(--font-sfpro-fallback)) !important;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.font-sans {
+  font-family: var(--font-sfpro, var(--font-sfpro-fallback)) !important;
+}
+
+.text-xs {
+  font-size: 12px;
+  line-height: 24px;
+}
+
+.text-sm {
+  font-size: 14px;
+  line-height: 28px;
+}
+
+.text-md {
+  font-size: 16px;
+  line-height: 30px;
+}
+
+.text-lg {
+  font-size: 18px;
+  line-height: 32px;
+}
+
+.text-xl {
+  font-size: 20px;
+  line-height: 34px;
+}
+
+.display-xs {
+  font-size: 24px;
+  line-height: 36px;
+}
+
+.display-sm {
+  font-size: 28px;
+  line-height: 38px;
+}
+
+.display-md {
+  font-size: 32px;
+  line-height: 42px;
+}
+
+.display-lg {
+  font-size: 36px;
+  line-height: 44px;
+}
+
+.display-xl {
+  font-size: 40px;
+  line-height: 56px;
+}
+
+.display-2xl {
+  font-size: 48px;
+  line-height: 60px;
+}
+
+.display-3xl {
+  font-size: 56px;
+  line-height: 68px;
 }
