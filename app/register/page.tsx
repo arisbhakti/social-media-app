@@ -1,5 +1,15 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +39,7 @@ export default function RegisterPage() {
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">
-        <section className="grid w-full max-w-[700px] gap-8 rounded-[30px] border border-[rgba(246,249,254,0.16)] bg-[rgba(3,6,12,0.82)] px-8 py-10 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-[560px] md:max-w-none md:rounded-[22px] md:px-6 md:py-7">
+        <Card className="grid w-full max-w-[700px] gap-8 rounded-[30px] border border-[rgba(246,249,254,0.16)] bg-[rgba(3,6,12,0.82)] px-8 py-10 text-[var(--base-pure-white)] shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-[560px] md:max-w-none md:rounded-[22px] md:px-6 md:py-7">
           <header className="grid place-items-center gap-8">
             <div className="flex items-center gap-3">
               <Image
@@ -46,125 +56,135 @@ export default function RegisterPage() {
 
           <form className="grid gap-6">
             <div className="grid gap-2">
-              <label className="text-lg leading-none font-bold" htmlFor="name">
+              <Label className="text-lg leading-none font-bold" htmlFor="name">
                 Name
-              </label>
+              </Label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
-                <input
+                <Input
                   id="name"
                   type="text"
                   autoComplete="name"
                   placeholder="Enter your email"
-                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-lg leading-none font-bold" htmlFor="username">
+              <Label className="text-lg leading-none font-bold" htmlFor="username">
                 Username
-              </label>
+              </Label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
-                <input
+                <Input
                   id="username"
                   type="text"
                   autoComplete="username"
                   placeholder="Enter your username"
-                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label
+              <Label
                 className="text-lg leading-none font-bold"
                 htmlFor="number-phone"
               >
                 Number Phone
-              </label>
+              </Label>
               <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
-                <input
+                <Input
                   id="number-phone"
                   type="tel"
                   autoComplete="tel"
                   placeholder="Enter your number phone"
-                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label
+              <Label
                 className="text-lg leading-none font-bold"
                 htmlFor="register-password"
               >
                 Password
-              </label>
-              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
-                <input
+              </Label>
+              <InputGroup className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+                <InputGroupInput
                   id="register-password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Enter your password"
-                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                  className="text-xl h-full w-full p-0 text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:text-[var(--neutral-300)]"
-                  aria-label={
-                    showPassword ? "Hide password value" : "Show password value"
-                  }
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-6 w-6" strokeWidth={2.2} />
-                  ) : (
-                    <Eye className="h-6 w-6" strokeWidth={2.2} />
-                  )}
-                </button>
-              </div>
+                <InputGroupAddon align="inline-end" className="pr-0">
+                  <InputGroupButton
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:bg-transparent hover:text-[var(--neutral-300)]"
+                    aria-label={
+                      showPassword
+                        ? "Hide password value"
+                        : "Show password value"
+                    }
+                    onClick={() => setShowPassword((value) => !value)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-6 w-6" strokeWidth={2.2} />
+                    ) : (
+                      <Eye className="h-6 w-6" strokeWidth={2.2} />
+                    )}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
 
             <div className="grid gap-2">
-              <label
+              <Label
                 className="text-lg leading-none font-bold"
                 htmlFor="confirm-password"
               >
                 Confirm Password
-              </label>
-              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
-                <input
+              </Label>
+              <InputGroup className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+                <InputGroupInput
                   id="confirm-password"
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Enter your confirm password"
-                  className="text-xl h-full w-full bg-transparent text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus:outline-none"
+                  className="text-xl h-full w-full p-0 text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:text-[var(--neutral-300)]"
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide confirm password value"
-                      : "Show confirm password value"
-                  }
-                  onClick={() => setShowConfirmPassword((value) => !value)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-6 w-6" strokeWidth={2.2} />
-                  ) : (
-                    <Eye className="h-6 w-6" strokeWidth={2.2} />
-                  )}
-                </button>
-              </div>
+                <InputGroupAddon align="inline-end" className="pr-0">
+                  <InputGroupButton
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:bg-transparent hover:text-[var(--neutral-300)]"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password value"
+                        : "Show confirm password value"
+                    }
+                    onClick={() => setShowConfirmPassword((value) => !value)}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-6 w-6" strokeWidth={2.2} />
+                    ) : (
+                      <Eye className="h-6 w-6" strokeWidth={2.2} />
+                    )}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
 
-            <button
+            <Button
               type="submit"
               className="text-xl flex h-16 items-center justify-center rounded-full bg-[linear-gradient(90deg,var(--primary-200)_0%,var(--primary-300)_100%)] font-bold text-[var(--base-pure-white)] transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             >
               Submit
-            </button>
+            </Button>
           </form>
 
           <p className="text-xl flex items-center justify-center gap-2 leading-none font-bold text-[var(--neutral-700)]">
@@ -173,7 +193,7 @@ export default function RegisterPage() {
               Log in
             </Link>
           </p>
-        </section>
+        </Card>
       </main>
     </div>
   );
