@@ -1,8 +1,22 @@
+import Link from "next/link";
 import { IoAdd, IoHome, IoPerson } from "react-icons/io5";
 
 import { Button } from "@/components/ui/button";
 
-export function HomeBottomNav() {
+type HomeBottomNavProps = {
+  activeTab?: "home" | "profile";
+  homeHref?: string;
+  profileHref?: string;
+};
+
+export function HomeBottomNav({
+  activeTab = "home",
+  homeHref = "/home",
+  profileHref = "/myprofile",
+}: HomeBottomNavProps) {
+  const isHomeActive = activeTab === "home";
+  const isProfileActive = activeTab === "profile";
+
   return (
     <nav
       aria-label="Home navigation"
@@ -10,14 +24,26 @@ export function HomeBottomNav() {
     >
       <div className="pointer-events-auto flex w-full max-w-[380px] items-center justify-between rounded-full border border-[rgba(126,145,183,0.18)] bg-[rgba(4,11,23,0.95)] px-5 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
         <Button
-          type="button"
+          asChild
           variant="ghost"
-          className="h-auto min-w-[96px] flex-col gap-1 rounded-full px-2 py-1 text-[var(--primary-200)] hover:bg-transparent hover:text-[var(--primary-200)]"
+          className={`h-auto min-w-[96px] flex-col gap-1 rounded-full px-2 py-1 ${
+            isHomeActive
+              ? "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
+              : "text-[var(--base-pure-white)] hover:text-[var(--base-pure-white)]"
+          } hover:bg-transparent`}
         >
-          <span className="flex size-6 items-center justify-center rounded-full bg-[rgba(127,81,249,0.22)]">
-            <IoHome className="size-3.5" />
-          </span>
-          <span className="text-[14px] leading-[18px] font-medium">Home</span>
+          <Link href={homeHref} aria-current={isHomeActive ? "page" : undefined}>
+            <span
+              className={`flex size-6 items-center justify-center rounded-full ${
+                isHomeActive
+                  ? "bg-[rgba(127,81,249,0.22)]"
+                  : "bg-[rgba(126,145,183,0.16)]"
+              }`}
+            >
+              <IoHome className="size-3.5" />
+            </span>
+            <span className="text-[14px] leading-[18px] font-medium">Home</span>
+          </Link>
         </Button>
 
         <Button
@@ -30,12 +56,23 @@ export function HomeBottomNav() {
         </Button>
 
         <Button
-          type="button"
+          asChild
           variant="ghost"
-          className="h-auto min-w-[96px] flex-col gap-1 rounded-full px-2 py-1 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
+          className={`h-auto min-w-[96px] flex-col gap-1 rounded-full px-2 py-1 ${
+            isProfileActive
+              ? "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
+              : "text-[var(--base-pure-white)] hover:text-[var(--base-pure-white)]"
+          } hover:bg-transparent`}
         >
-          <IoPerson className="size-5" />
-          <span className="text-[14px] leading-[18px] font-medium">Profile</span>
+          <Link
+            href={profileHref}
+            aria-current={isProfileActive ? "page" : undefined}
+          >
+            <IoPerson className="size-5" />
+            <span className="text-[14px] leading-[18px] font-medium">
+              Profile
+            </span>
+          </Link>
         </Button>
       </div>
     </nav>

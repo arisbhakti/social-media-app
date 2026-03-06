@@ -1,15 +1,55 @@
+"use client";
+
 import Image from "next/image";
-import { IoSearchOutline } from "react-icons/io5";
+import { usePathname, useRouter } from "next/navigation";
+import { IoArrowBackOutline, IoSearchOutline } from "react-icons/io5";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
+function getProfileTitle(pathname: string) {
+  if (pathname === "/myprofile") {
+    return "John Doe";
+  }
+
+  if (!pathname.startsWith("/profile/")) {
+    return "Profile";
+  }
+
+  const profileId = pathname.split("/")[2] ?? "";
+  if (!profileId || profileId.toLowerCase() === "id") {
+    return "John Doe";
+  }
+
+  return profileId
+    .replace(/[-_]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export function Header() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isProfileRoute =
+    pathname === "/myprofile" || pathname.startsWith("/profile/");
+  const profileTitle = getProfileTitle(pathname);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/home");
+  };
+
   return (
     <header className="flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
-      <div className="flex h-[72px] items-center justify-between px-4 py-0 md:px-[120px]">
+      <div className="hidden h-[72px] items-center justify-between px-[120px] py-0 md:flex">
         <div className="flex items-center gap-3">
           <Image
             src="/icon-sociality.svg"
@@ -21,7 +61,7 @@ export function Header() {
           <span className="display-xs leading-none font-bold">Sociality</span>
         </div>
 
-        <div className="hidden w-full max-w-[500px] md:flex">
+        <div className="w-full max-w-[500px]">
           <div className="relative w-full">
             <IoSearchOutline className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[var(--neutral-500)]" />
             <Input
@@ -33,29 +73,69 @@ export function Header() {
           </div>
         </div>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="flex items-center gap-2">
           <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
             <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           <span className="text-[14px] leading-[20px] font-bold">John Doe</span>
         </div>
+      </div>
 
-        <div className="flex items-center gap-2 md:hidden">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Open search"
-            className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.18)]"
-          >
-            <IoSearchOutline className="size-[20px]" />
-          </Button>
-          <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
-            <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-        </div>
+      <div className="flex h-[72px] items-center justify-between px-4 py-0 md:hidden">
+        {isProfileRoute ? (
+          <>
+            <div className="flex min-w-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Go back"
+                onClick={handleBack}
+                className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.18)]"
+              >
+                <IoArrowBackOutline className="size-[20px]" />
+              </Button>
+              <span className="truncate text-[26px] leading-[30px] font-bold">
+                {profileTitle}
+              </span>
+            </div>
+
+            <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
+              <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
+              <AvatarFallback>JD</AvatarFallback>
+            </Avatar>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/icon-sociality.svg"
+                alt="Sociality icon"
+                width={28}
+                height={28}
+                priority
+              />
+              <span className="display-xs leading-none font-bold">Sociality</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Open search"
+                className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.18)]"
+              >
+                <IoSearchOutline className="size-[20px]" />
+              </Button>
+              <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
+                <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+            </div>
+          </>
+        )}
       </div>
       <Separator className="bg-[rgba(126,145,183,0.2)]" />
     </header>
