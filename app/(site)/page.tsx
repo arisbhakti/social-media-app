@@ -1,3 +1,4 @@
+import { HomeBottomNav } from "@/components/site/home-bottom-nav";
 import { PostCard } from "@/components/site/post-card";
 import { Separator } from "@/components/ui/separator";
 
@@ -22,7 +23,7 @@ const postImages = [
 
 export default function HomePage() {
   return (
-    <main className="flex w-full flex-1 justify-center px-4 py-4 md:px-0 md:py-6">
+    <main className="flex w-full flex-1 justify-center px-4 py-4 pb-28 md:px-0 md:py-6 md:pb-32">
       <section className="flex w-full max-w-[472px] flex-col gap-6">
         {postImages.map((post, index) => (
           <div key={post.src} className="grid gap-5">
@@ -37,6 +38,7 @@ export default function HomePage() {
           </div>
         ))}
       </section>
+      <HomeBottomNav />
     </main>
   );
 }
