@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 
 const postImages = [
   {
-    src: "https://images.unsplash.com/photo-1533077541387-16d0f8af1f1c?auto=format&fit=crop&w=1200&q=80",
+    src: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80",
     alt: "A group of children taking a cheerful selfie together.",
   },
   {
