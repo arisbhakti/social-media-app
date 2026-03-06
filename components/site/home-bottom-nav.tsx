@@ -47,12 +47,14 @@ export function HomeBottomNav({
         </Button>
 
         <Button
-          type="button"
+          asChild
           size="icon"
           aria-label="Create post"
           className="size-14 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)]"
         >
-          <IoAdd className="size-7" />
+          <Link href="/addpost">
+            <IoAdd className="size-7" />
+          </Link>
         </Button>
 
         <Button
