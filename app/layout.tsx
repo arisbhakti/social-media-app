@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppToaster } from "@/components/ui/app-toast";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="bg-black">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <AppToaster />
+      </body>
     </html>
   );
 }

@@ -4,6 +4,36 @@ export type DummyProfilePost = {
   alt: string;
 };
 
+export type MyProfileData = {
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  bio: string;
+  avatarSrc: string;
+  stats: {
+    post: number;
+    followers: number;
+    following: number;
+    likes: number;
+  };
+};
+
+export const myProfileData: MyProfileData = {
+  name: "John Doe",
+  username: "johndoe",
+  email: "johndoe@email.com",
+  phone: "081234567890",
+  bio: "Creating unforgettable moments with my favorite person! 📸✨ Let's cherish every second together!",
+  avatarSrc: "/dummy-profile-image.png",
+  stats: {
+    post: 50,
+    followers: 100,
+    following: 43,
+    likes: 567,
+  },
+};
+
 export const galleryPosts: DummyProfilePost[] = [
   {
     id: 1,

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { LayoutGrid } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -58,6 +59,7 @@ export function ProfilePage({
   secondaryPosts,
   initialFollowing = false,
 }: ProfilePageProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTab>("gallery");
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const isOwnerProfile = mode === "self";
@@ -77,6 +79,7 @@ export function ProfilePage({
         <Button
           type="button"
           variant="ghost"
+          onClick={() => router.push("/editprofile")}
           className={cn(
             "h-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[14px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:h-[48px]",
             widthClass

@@ -10,6 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 function getProfileTitle(pathname: string) {
+  if (pathname === "/editprofile") {
+    return "Edit Profile";
+  }
+
   if (pathname === "/myprofile") {
     return "John Doe";
   }
@@ -35,12 +39,19 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const isProfileRoute =
-    pathname === "/myprofile" || pathname.startsWith("/profile/");
+    pathname === "/myprofile" ||
+    pathname === "/editprofile" ||
+    pathname.startsWith("/profile/");
   const profileTitle = getProfileTitle(pathname);
 
   const handleBack = () => {
     if (window.history.length > 1) {
       router.back();
+      return;
+    }
+
+    if (pathname === "/editprofile") {
+      router.push("/myprofile");
       return;
     }
 
