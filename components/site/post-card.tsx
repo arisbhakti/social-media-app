@@ -1,17 +1,27 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  EmojiStyle,
+  Theme,
+  type EmojiClickData,
+} from "emoji-picker-react";
+
 import {
   IoBookmarkOutline,
   IoChatbubbleOutline,
   IoCheckmarkCircleOutline,
   IoClose,
+  IoEllipsisHorizontal,
+  IoHappyOutline,
   IoHeart,
   IoHeartOutline,
   IoPaperPlaneOutline,
 } from "react-icons/io5";
 
+import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,10 +29,16 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 
+const EmojiPicker = dynamic(
+  () => import("emoji-picker-react").then((mod) => mod.default),
+  { ssr: false }
+);
+
 type PostCardProps = {
   imageSrc: string;
   imageAlt: string;
   liked?: boolean;
+  hasInitialComments?: boolean;
 };
 
 type LikeUser = {
@@ -30,6 +46,13 @@ type LikeUser = {
   name: string;
   username: string;
   following: boolean;
+};
+
+type CommentItem = {
+  id: number;
+  name: string;
+  content: string;
+  createdAt: string;
 };
 
 const LIKED_BY_USERS: LikeUser[] = [
@@ -40,6 +63,24 @@ const LIKED_BY_USERS: LikeUser[] = [
   { id: 5, name: "John Doe", username: "johndoe", following: false },
   { id: 6, name: "John Doe", username: "johndoe", following: false },
 ];
+
+const DEFAULT_COMMENTS: CommentItem[] = [
+  {
+    id: 1,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+  {
+    id: 2,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+];
+
+const POST_CAPTION =
+  "Creating unforgettable moments with my favorite person! 📸✨ Every laugh, every little adventure, every quiet moment together feels like magic. You make ordinary days feel extraordinary, and I'm so grateful to share this journey with you. Let's keep cherishing every second, because with you, time always feels too short. 💕";
 
 function ActionButton({
   label,
@@ -64,6 +105,26 @@ function ActionButton({
       <span className="flex size-5 items-center justify-center">{icon}</span>
       <span className="text-[18px] leading-[20px]">{count}</span>
     </Button>
+  );
+}
+
+function ModalActionStat({
+  label,
+  count,
+  icon,
+}: {
+  label: string;
+  count: number;
+  icon: ReactNode;
+}) {
+  return (
+    <div
+      aria-label={label}
+      className="flex items-center gap-2 text-[var(--base-pure-white)]"
+    >
+      <span className="flex size-5 items-center justify-center">{icon}</span>
+      <span className="text-[18px] leading-[22px]">{count}</span>
+    </div>
   );
 }
 
@@ -129,9 +190,124 @@ function LikesList() {
   );
 }
 
-export function PostCard({ imageSrc, imageAlt, liked = false }: PostCardProps) {
+function CommentRow({ item }: { item: CommentItem }) {
+  return (
+    <div className="border-b border-[rgba(126,145,183,0.2)] pb-4 last:border-b-0 last:pb-0">
+      <div className="flex items-center gap-3">
+        <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
+          <AvatarImage src="/dummy-profile-image.png" alt={item.name} />
+          <AvatarFallback>{item.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="grid gap-0">
+          <span className="text-[18px] leading-[22px] font-bold">{item.name}</span>
+          <span className="text-[14px] leading-[18px] text-[var(--neutral-500)]">
+            {item.createdAt}
+          </span>
+        </div>
+      </div>
+      <p className="mt-3 text-[16px] leading-[24px] text-[var(--base-pure-white)]">
+        {item.content}
+      </p>
+    </div>
+  );
+}
+
+export function PostCard({
+  imageSrc,
+  imageAlt,
+  liked = false,
+  hasInitialComments = false,
+}: PostCardProps) {
   const [isLikesOpen, setIsLikesOpen] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [commentInput, setCommentInput] = useState("");
+  const [comments, setComments] = useState<CommentItem[]>(() =>
+    hasInitialComments ? [...DEFAULT_COMMENTS] : []
+  );
+  const [nextCommentId, setNextCommentId] = useState(
+    hasInitialComments ? DEFAULT_COMMENTS.length + 1 : 1
+  );
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
   const isMobile = useIsMobile();
+  const isPostDisabled = commentInput.trim().length === 0;
+
+  const handleOpenComments = () => {
+    setIsCommentsOpen(true);
+  };
+
+  const handleCommentsOpenChange = (open: boolean) => {
+    setIsCommentsOpen(open);
+
+    if (!open) {
+      setIsEmojiPickerOpen(false);
+    }
+  };
+
+  const handleSubmitComment = () => {
+    const trimmedComment = commentInput.trim();
+
+    if (!trimmedComment) {
+      return;
+    }
+
+    setComments((prevComments) => [
+      ...prevComments,
+      {
+        id: nextCommentId,
+        name: "You",
+        content: trimmedComment,
+        createdAt: "Just now",
+      },
+    ]);
+    setNextCommentId((value) => value + 1);
+    setCommentInput("");
+    setIsEmojiPickerOpen(false);
+  };
+
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    setCommentInput((prevValue) => `${prevValue}${emojiData.emoji}`);
+  };
+
+  useEffect(() => {
+    if (!isEmojiPickerOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+
+      if (emojiPickerRef.current?.contains(event.target)) {
+        return;
+      }
+
+      if (emojiButtonRef.current?.contains(event.target)) {
+        return;
+      }
+
+      setIsEmojiPickerOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, [isEmojiPickerOpen]);
+
+  const commentsContent = comments.length === 0 && (
+    <div className="flex min-h-[220px] flex-1 flex-col items-center justify-center text-center">
+      <h3 className="text-[24px] leading-[28px] font-bold text-[var(--base-pure-white)]">
+        No Comments yet
+      </h3>
+      <p className="mt-1 text-[14px] leading-[20px] text-[var(--neutral-500)]">
+        Start the conversation
+      </p>
+    </div>
+  );
 
   return (
     <>
@@ -176,6 +352,7 @@ export function PostCard({ imageSrc, imageAlt, liked = false }: PostCardProps) {
             <ActionButton
               label="Open comments"
               count={20}
+              onClick={handleOpenComments}
               icon={<IoChatbubbleOutline className="size-[18px]" />}
             />
             <ActionButton
@@ -249,6 +426,296 @@ export function PostCard({ imageSrc, imageAlt, liked = false }: PostCardProps) {
                 <IoClose className="size-8" />
               </Button>
               <LikesList />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isMobile ? (
+        <Drawer open={isCommentsOpen} onOpenChange={handleCommentsOpenChange}>
+          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)] p-0 text-[var(--base-pure-white)]">
+            <DrawerTitle className="sr-only">Comments</DrawerTitle>
+            <div className="relative flex min-h-0 flex-1 flex-col px-4 pt-4 pb-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close comments"
+                onClick={() => handleCommentsOpenChange(false)}
+                className="absolute -top-10 right-4 z-20 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+              >
+                <IoClose className="size-8" />
+              </Button>
+
+              <h2 className="text-[20px] leading-[24px] font-semibold text-[var(--base-pure-white)]">
+                Comments
+              </h2>
+
+              <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto">
+                {comments.length === 0 ? (
+                  commentsContent
+                ) : (
+                  <div className="grid gap-4 pr-1">
+                    {comments.map((comment) => (
+                      <CommentRow key={comment.id} item={comment} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative mt-4">
+                {isEmojiPickerOpen ? (
+                  <div
+                    ref={emojiPickerRef}
+                    className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
+                  >
+                    <EmojiPicker
+                      onEmojiClick={handleEmojiClick}
+                      emojiStyle={EmojiStyle.NATIVE}
+                      theme={Theme.DARK}
+                      searchDisabled
+                      skinTonesDisabled
+                      width={260}
+                      height={188}
+                      lazyLoadEmojis
+                      previewConfig={{ showPreview: false }}
+                    />
+                  </div>
+                ) : null}
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    ref={emojiButtonRef}
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Add emoji"
+                    onClick={() => setIsEmojiPickerOpen((value) => !value)}
+                    className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                  >
+                    <IoHappyOutline className="size-6" />
+                  </Button>
+
+                  <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
+                    <input
+                      type="text"
+                      aria-label="Add comment"
+                      placeholder="Add Comment"
+                      value={commentInput}
+                      onChange={(event) => setCommentInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleSubmitComment();
+                        }
+                      }}
+                      className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
+                    />
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleSubmitComment}
+                      disabled={isPostDisabled}
+                      className={cn(
+                        "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
+                        isPostDisabled
+                          ? "text-[var(--neutral-500)]"
+                          : "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
+                      )}
+                    >
+                      Post
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={isCommentsOpen} onOpenChange={handleCommentsOpenChange}>
+          <DialogContent
+            showCloseButton={false}
+            className="w-[calc(100vw-48px)] !max-w-[1200px] border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none"
+          >
+            <DialogTitle className="sr-only">Comments</DialogTitle>
+            <div className="relative">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close comments"
+                onClick={() => handleCommentsOpenChange(false)}
+                className="absolute -top-10 right-0 z-20 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+              >
+                <IoClose className="size-8" />
+              </Button>
+
+              <div className="overflow-hidden border border-[rgba(126,145,183,0.24)] bg-[rgba(2,8,20,0.98)]">
+                <div className="grid h-[min(84vh,760px)] grid-cols-[minmax(360px,1fr)_minmax(380px,500px)]">
+                  <div className="relative h-full bg-[var(--base-pure-black)]">
+                    <Image
+                      src={imageSrc}
+                      alt={imageAlt}
+                      fill
+                      sizes="(max-width: 1200px) 60vw, 720px"
+                      className="object-cover"
+                    />
+                  </div>
+
+                <div className="flex min-h-0 flex-col border-l border-l-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)] px-5 pt-5 pb-4">
+                  <div className="border-b border-b-[rgba(126,145,183,0.2)] pb-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
+                          <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
+                          <AvatarFallback>JD</AvatarFallback>
+                        </Avatar>
+                        <div className="grid gap-0">
+                          <span className="text-[18px] leading-[22px] font-bold">
+                            John Doe
+                          </span>
+                          <span className="text-[14px] leading-[18px] text-[var(--neutral-500)]">
+                            1 Minutes Ago
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="More options"
+                        className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                      >
+                        <IoEllipsisHorizontal className="size-5" />
+                      </Button>
+                    </div>
+
+                    <p className="mt-4 text-[15px] leading-[28px] text-[var(--base-pure-white)]">
+                      {POST_CAPTION}
+                    </p>
+                  </div>
+
+                  <div className="mt-5 flex min-h-0 flex-1 flex-col">
+                    <h2 className="text-[20px] leading-[24px] font-semibold text-[var(--base-pure-white)]">
+                      Comments
+                    </h2>
+
+                    <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
+                      {comments.length === 0 ? (
+                        commentsContent
+                      ) : (
+                        <div className="grid gap-4 pr-1">
+                          {comments.map((comment) => (
+                            <CommentRow key={comment.id} item={comment} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-t-[rgba(126,145,183,0.2)] pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <ModalActionStat
+                          label="Total likes"
+                          count={20}
+                          icon={<IoHeart className="size-[20px] text-[var(--red)]" />}
+                        />
+                        <ModalActionStat
+                          label="Total comments"
+                          count={20}
+                          icon={<IoChatbubbleOutline className="size-[19px]" />}
+                        />
+                        <ModalActionStat
+                          label="Total shares"
+                          count={20}
+                          icon={<IoPaperPlaneOutline className="size-[20px]" />}
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Save post"
+                        className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                      >
+                        <IoBookmarkOutline className="size-[20px]" />
+                      </Button>
+                    </div>
+
+                    <div className="relative mt-4">
+                      {isEmojiPickerOpen ? (
+                        <div
+                          ref={emojiPickerRef}
+                          className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
+                        >
+                          <EmojiPicker
+                            onEmojiClick={handleEmojiClick}
+                            emojiStyle={EmojiStyle.NATIVE}
+                            theme={Theme.DARK}
+                            searchDisabled
+                            skinTonesDisabled
+                            width={260}
+                            height={188}
+                            lazyLoadEmojis
+                            previewConfig={{ showPreview: false }}
+                          />
+                        </div>
+                      ) : null}
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          ref={emojiButtonRef}
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Add emoji"
+                          onClick={() => setIsEmojiPickerOpen((value) => !value)}
+                          className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                        >
+                          <IoHappyOutline className="size-6" />
+                        </Button>
+
+                        <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
+                          <input
+                            type="text"
+                            aria-label="Add comment"
+                            placeholder="Add Comment"
+                            value={commentInput}
+                            onChange={(event) => setCommentInput(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                handleSubmitComment();
+                              }
+                            }}
+                            className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={handleSubmitComment}
+                            disabled={isPostDisabled}
+                            className={cn(
+                              "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
+                              isPostDisabled
+                                ? "text-[var(--neutral-500)]"
+                                : "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
+                            )}
+                          >
+                            Post
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

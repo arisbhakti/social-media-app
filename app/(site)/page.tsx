@@ -31,6 +31,7 @@ export default function HomePage() {
               imageSrc={post.src}
               imageAlt={post.alt}
               liked={index === 0}
+              hasInitialComments={index === 0}
             />
             {index < postImages.length - 1 ? (
               <Separator className="bg-[rgba(126,145,183,0.2)]" />
