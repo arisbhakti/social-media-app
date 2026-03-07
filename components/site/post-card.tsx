@@ -144,10 +144,7 @@ function ModalActionStat({
   icon: ReactNode;
 }) {
   return (
-    <div
-      aria-label={label}
-      className="flex items-center gap-2 text-[var(--base-pure-white)]"
-    >
+    <div aria-label={label} className="flex items-center gap-2">
       <span className="flex size-5 items-center justify-center">{icon}</span>
       <span className="text-md font-semibold">{count}</span>
     </div>
@@ -160,7 +157,7 @@ function FollowUserButton({ following }: { following: boolean }) {
       <Button
         type="button"
         variant="ghost"
-        className="h-[48px] min-w-[144px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent px-5 text-[16px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
+        className="h-10  rounded-full border border-neutral-900 px-7 text-sm font-semibold py-2"
       >
         <IoCheckmarkCircleOutline className="size-5" />
         Following
@@ -171,7 +168,7 @@ function FollowUserButton({ following }: { following: boolean }) {
   return (
     <Button
       type="button"
-      className="h-[48px] min-w-[144px] rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] px-7 text-[16px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)]"
+      className="h-10 rounded-full bg-primary-300 px-7 text-sm font-bold "
     >
       Follow
     </Button>
@@ -180,11 +177,9 @@ function FollowUserButton({ following }: { following: boolean }) {
 
 function LikesList() {
   return (
-    <div className="flex max-h-[65vh] flex-col overflow-hidden rounded-[20px] border border-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)]">
+    <div className="flex max-h-[65vh] flex-col overflow-hidden rounded-4xl  bg-neutral-950 text-neutral-25">
       <div className="px-6 pt-6 pb-3">
-        <h2 className="text-[20px] leading-[24px] font-semibold text-[var(--base-pure-white)]">
-          Likes
-        </h2>
+        <h2 className="text-md md:text-xl font-bold">Likes</h2>
       </div>
       <div className="grid gap-2 overflow-y-auto px-4 pb-5 sm:px-6">
         {LIKED_BY_USERS.map((user) => (
@@ -193,18 +188,14 @@ function LikesList() {
             className="flex items-center justify-between gap-3 rounded-[14px] py-1.5"
           >
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-3">
-                <Avatar className="size-[52px] border border-[rgba(126,145,183,0.24)]">
+              <div className="flex items-center gap-2">
+                <Avatar className="size-12 border border-[rgba(126,145,183,0.24)]">
                   <AvatarImage src="/dummy-profile-image.png" alt={user.name} />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <p className="truncate text-[20px] leading-[24px] font-bold text-[var(--base-pure-white)]">
-                    {user.name}
-                  </p>
-                  <p className="truncate text-[16px] leading-[20px] text-[var(--neutral-500)]">
-                    {user.username}
-                  </p>
+                  <p className=" text-sm font-bold ">{user.name}</p>
+                  <p className=" text-sm text-neutral-400">{user.username}</p>
                 </div>
               </div>
             </div>
@@ -414,7 +405,7 @@ export function PostCard({
 
       {isMobile ? (
         <Drawer open={isLikesOpen} onOpenChange={setIsLikesOpen}>
-          <DrawerContent className="max-h-[85vh] border-t border-t-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)] p-0 text-[var(--base-pure-white)]">
+          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0 ">
             <DrawerTitle className="sr-only">Likes</DrawerTitle>
             <div className="relative px-4 pt-5 pb-4">
               <Button
@@ -435,7 +426,7 @@ export function PostCard({
         <Dialog open={isLikesOpen} onOpenChange={setIsLikesOpen}>
           <DialogContent
             showCloseButton={false}
-            className="w-[min(700px,calc(100%-2rem))] border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none"
+            className="w-[548px]! border-0 bg-neutral-950 p-0 text-neutral-25 "
           >
             <DialogTitle className="sr-only">Likes</DialogTitle>
             <div className="relative">
@@ -445,7 +436,7 @@ export function PostCard({
                 size="icon-sm"
                 aria-label="Close likes list"
                 onClick={() => setIsLikesOpen(false)}
-                className="absolute top-4 right-4 z-10 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute top-4 right-4 z-10 size-8 rounded-full p-0 text-neutral-25 hover:bg-transparent"
               >
                 <IoClose className="size-8" />
               </Button>
