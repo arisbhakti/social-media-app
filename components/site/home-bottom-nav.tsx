@@ -22,7 +22,7 @@ export function HomeBottomNav({
       aria-label="Home navigation"
       className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4"
     >
-      <div className="pointer-events-auto flex w-full max-w-[380px] items-center justify-between rounded-full border border-[rgba(126,145,183,0.18)] bg-[rgba(4,11,23,0.95)] px-5 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+      <div className="pointer-events-auto flex w-full max-w-[360px] items-center justify-between rounded-full border border-[rgba(126,145,183,0.18)] bg-[rgba(4,11,23,0.95)] px-5 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
         <Button
           asChild
           variant="ghost"
@@ -32,7 +32,10 @@ export function HomeBottomNav({
               : "text-[var(--base-pure-white)] hover:text-[var(--base-pure-white)]"
           } hover:bg-transparent`}
         >
-          <Link href={homeHref} aria-current={isHomeActive ? "page" : undefined}>
+          <Link
+            href={homeHref}
+            aria-current={isHomeActive ? "page" : undefined}
+          >
             <span
               className={`flex size-6 items-center justify-center rounded-full ${
                 isHomeActive
@@ -40,9 +43,9 @@ export function HomeBottomNav({
                   : "bg-[rgba(126,145,183,0.16)]"
               }`}
             >
-              <IoHome className="size-3.5" />
+              <IoHome className="size-6" />
             </span>
-            <span className="text-[14px] leading-[18px] font-medium">Home</span>
+            <span className="text-md bold">Home</span>
           </Link>
         </Button>
 
@@ -70,10 +73,8 @@ export function HomeBottomNav({
             href={profileHref}
             aria-current={isProfileActive ? "page" : undefined}
           >
-            <IoPerson className="size-5" />
-            <span className="text-[14px] leading-[18px] font-medium">
-              Profile
-            </span>
+            <IoPerson className="size-6" />
+            <span className="text-md bold">Profile</span>
           </Link>
         </Button>
       </div>
