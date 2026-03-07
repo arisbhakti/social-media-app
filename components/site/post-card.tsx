@@ -3,11 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  EmojiStyle,
-  Theme,
-  type EmojiClickData,
-} from "emoji-picker-react";
+import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 
 import {
   IoBookmarkOutline,
@@ -31,7 +27,7 @@ import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 
 const EmojiPicker = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.default),
-  { ssr: false }
+  { ssr: false },
 );
 
 type PostCardProps = {
@@ -77,6 +73,36 @@ const DEFAULT_COMMENTS: CommentItem[] = [
     content: "This is the kind of love everyone dreams about ✨",
     createdAt: "1 Minute Ago",
   },
+  {
+    id: 3,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+  {
+    id: 4,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+  {
+    id: 5,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+  {
+    id: 6,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
+  {
+    id: 7,
+    name: "Alexander",
+    content: "This is the kind of love everyone dreams about ✨",
+    createdAt: "1 Minute Ago",
+  },
 ];
 
 const POST_CAPTION =
@@ -102,8 +128,8 @@ function ActionButton({
       onClick={onClick}
       className="h-auto gap-1.5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
     >
-      <span className="flex size-5 items-center justify-center">{icon}</span>
-      <span className="text-[18px] leading-[20px]">{count}</span>
+      <span className="flex size-6 items-center justify-center">{icon}</span>
+      <span className="text-sm font-semibold md:text-md">{count}</span>
     </Button>
   );
 }
@@ -123,7 +149,7 @@ function ModalActionStat({
       className="flex items-center gap-2 text-[var(--base-pure-white)]"
     >
       <span className="flex size-5 items-center justify-center">{icon}</span>
-      <span className="text-[18px] leading-[22px]">{count}</span>
+      <span className="text-md font-semibold">{count}</span>
     </div>
   );
 }
@@ -192,22 +218,20 @@ function LikesList() {
 
 function CommentRow({ item }: { item: CommentItem }) {
   return (
-    <div className="border-b border-[rgba(126,145,183,0.2)] pb-4 last:border-b-0 last:pb-0">
-      <div className="flex items-center gap-3">
-        <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
+    <div className="border-b border-neutral-900 pb-3 md:pb-4 last:border-b-0 last:pb-0 flex flex-col gap-2 md:gap-2.5">
+      <div className="flex items-center gap-2">
+        <Avatar className="size-10 ">
           <AvatarImage src="/dummy-profile-image.png" alt={item.name} />
           <AvatarFallback>{item.name.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="grid gap-0">
-          <span className="text-[18px] leading-[22px] font-bold">{item.name}</span>
-          <span className="text-[14px] leading-[18px] text-[var(--neutral-500)]">
-            {item.createdAt}
+          <span className="text-xs md:text-sm font-bold md:-mb-0.5 -mb-1">
+            {item.name}
           </span>
+          <span className="text-xs text-neutral-400">{item.createdAt}</span>
         </div>
       </div>
-      <p className="mt-3 text-[16px] leading-[24px] text-[var(--base-pure-white)]">
-        {item.content}
-      </p>
+      <p className="text-sm">{item.content}</p>
     </div>
   );
 }
@@ -223,10 +247,10 @@ export function PostCard({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<CommentItem[]>(() =>
-    hasInitialComments ? [...DEFAULT_COMMENTS] : []
+    hasInitialComments ? [...DEFAULT_COMMENTS] : [],
   );
   const [nextCommentId, setNextCommentId] = useState(
-    hasInitialComments ? DEFAULT_COMMENTS.length + 1 : 1
+    hasInitialComments ? DEFAULT_COMMENTS.length + 1 : 1,
   );
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -311,41 +335,41 @@ export function PostCard({
 
   return (
     <>
-      <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-[var(--base-pure-white)] shadow-none">
-        <div className="flex items-center gap-2.5">
-          <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
+      <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-white shadow-none">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Avatar className="size-11 md:size-16 border border-[rgba(126,145,183,0.32)]">
             <AvatarImage src="/dummy-profile-image.png" alt="Johndoe" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           <div className="grid gap-0">
-            <span className="text-[20px] leading-[24px] font-bold">Johndoe</span>
-            <span className="text-[14px] leading-[18px] text-[var(--neutral-500)]">
+            <span className="text-sm md:text-md font-bold">Johndoe</span>
+            <span className="text-xs md:text-sm text-neutral-400">
               1 Minutes Ago
             </span>
           </div>
         </div>
 
-        <div className="w-full overflow-hidden rounded-[10px]">
+        <div className="w-full overflow-hidden rounded-xl">
           <Image
             src={imageSrc}
             alt={imageAlt}
             width={1000}
             height={1000}
-            className="aspect-square w-full object-cover"
+            className="md:h-150 aspect-square w-full object-cover"
           />
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <ActionButton
               label="Open likes list"
               count={20}
               onClick={() => setIsLikesOpen(true)}
               icon={
                 liked ? (
-                  <IoHeart className="size-[19px] text-[var(--red)]" />
+                  <IoHeart className="size-6 text-red" />
                 ) : (
-                  <IoHeartOutline className="size-[19px]" />
+                  <IoHeartOutline className="size-6" />
                 )
               }
             />
@@ -353,12 +377,12 @@ export function PostCard({
               label="Open comments"
               count={20}
               onClick={handleOpenComments}
-              icon={<IoChatbubbleOutline className="size-[18px]" />}
+              icon={<IoChatbubbleOutline className="size-6" />}
             />
             <ActionButton
               label="Share post"
               count={20}
-              icon={<IoPaperPlaneOutline className="size-[19px]" />}
+              icon={<IoPaperPlaneOutline className="size-6" />}
             />
           </div>
           <Button
@@ -368,20 +392,20 @@ export function PostCard({
             aria-label="Save post"
             className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
           >
-            <IoBookmarkOutline className="size-[18px]" />
+            <IoBookmarkOutline className="size-6" />
           </Button>
         </div>
 
-        <div className="grid gap-1">
-          <span className="text-[18px] leading-[22px] font-bold">Johndoe</span>
-          <p className="text-[14px] leading-[28px] text-[var(--neutral-700)]">
+        <div className="grid gap-0 md:gap-1">
+          <span className="text-sm md:text-md font-bold">Johndoe</span>
+          <p className="text-sm md:text-md text-neutral-25">
             Creating unforgettable moments with my favorite person! Let&apos;s
             cherish every second together! ...
           </p>
           <Button
             type="button"
             variant="link"
-            className="h-auto w-fit p-0 text-[18px] leading-[22px] font-semibold text-[var(--primary-200)]"
+            className="h-auto w-fit p-0 text-sm md:text-md font-bold text-primary-200"
           >
             Show More
           </Button>
@@ -433,7 +457,7 @@ export function PostCard({
 
       {isMobile ? (
         <Drawer open={isCommentsOpen} onOpenChange={handleCommentsOpenChange}>
-          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)] p-0 text-[var(--base-pure-white)]">
+          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0 text-[var(--base-pure-white)]">
             <DrawerTitle className="sr-only">Comments</DrawerTitle>
             <div className="relative flex min-h-0 flex-1 flex-col px-4 pt-4 pb-4">
               <Button
@@ -447,7 +471,7 @@ export function PostCard({
                 <IoClose className="size-8" />
               </Button>
 
-              <h2 className="text-[20px] leading-[24px] font-semibold text-[var(--base-pure-white)]">
+              <h2 className="text-md font-bold text-[var(--base-pure-white)]">
                 Comments
               </h2>
 
@@ -521,7 +545,7 @@ export function PostCard({
                         "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
                         isPostDisabled
                           ? "text-[var(--neutral-500)]"
-                          : "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
+                          : "text-[var(--primary-200)] hover:text-[var(--primary-200)]",
                       )}
                     >
                       Post
@@ -536,24 +560,23 @@ export function PostCard({
         <Dialog open={isCommentsOpen} onOpenChange={handleCommentsOpenChange}>
           <DialogContent
             showCloseButton={false}
-            className="w-[calc(100vw-48px)] !max-w-[1200px] border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none"
+            className="w-[calc(100vw-48px)] max-w-300! border-0 bg-neutral-950 p-0 text-neutral-25 "
           >
             <DialogTitle className="sr-only">Comments</DialogTitle>
             <div className="relative">
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-sm"
                 aria-label="Close comments"
                 onClick={() => handleCommentsOpenChange(false)}
-                className="absolute -top-10 right-0 z-20 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute -top-10 right-0 z-20 size-6 rounded-full p-0 text-white hover:bg-transparent"
               >
-                <IoClose className="size-8" />
+                <IoClose className="size-6" />
               </Button>
 
-              <div className="overflow-hidden border border-[rgba(126,145,183,0.24)] bg-[rgba(2,8,20,0.98)]">
+              <div className="overflow-hidden  bg-black">
                 <div className="grid h-[min(84vh,760px)] grid-cols-[minmax(360px,1fr)_minmax(380px,500px)]">
-                  <div className="relative h-full bg-[var(--base-pure-black)]">
+                  <div className="relative h-full bg-red-500">
                     <Image
                       src={imageSrc}
                       alt={imageAlt}
@@ -563,156 +586,158 @@ export function PostCard({
                     />
                   </div>
 
-                <div className="flex min-h-0 flex-col border-l border-l-[rgba(126,145,183,0.2)] bg-[rgba(2,8,20,0.98)] px-5 pt-5 pb-4">
-                  <div className="border-b border-b-[rgba(126,145,183,0.2)] pb-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
-                          <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
-                          <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div className="grid gap-0">
-                          <span className="text-[18px] leading-[22px] font-bold">
-                            John Doe
-                          </span>
-                          <span className="text-[14px] leading-[18px] text-[var(--neutral-500)]">
-                            1 Minutes Ago
-                          </span>
+                  <div className="flex min-h-0 flex-col bg-neutral-950 p-5 ">
+                    <div className="border-b border-b-neutral-900 pb-4 flex flex-col gap-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="size-10 ">
+                            <AvatarImage
+                              src="/dummy-profile-image.png"
+                              alt="John Doe"
+                            />
+                            <AvatarFallback>JD</AvatarFallback>
+                          </Avatar>
+                          <div className="grid gap-0.5">
+                            <span className="text-sm font-bold">John Doe</span>
+                            <span className="text-xs text-neutral-400">
+                              1 Minutes Ago
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="More options"
-                        className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
-                      >
-                        <IoEllipsisHorizontal className="size-5" />
-                      </Button>
-                    </div>
-
-                    <p className="mt-4 text-[15px] leading-[28px] text-[var(--base-pure-white)]">
-                      {POST_CAPTION}
-                    </p>
-                  </div>
-
-                  <div className="mt-5 flex min-h-0 flex-1 flex-col">
-                    <h2 className="text-[20px] leading-[24px] font-semibold text-[var(--base-pure-white)]">
-                      Comments
-                    </h2>
-
-                    <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
-                      {comments.length === 0 ? (
-                        commentsContent
-                      ) : (
-                        <div className="grid gap-4 pr-1">
-                          {comments.map((comment) => (
-                            <CommentRow key={comment.id} item={comment} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 border-t border-t-[rgba(126,145,183,0.2)] pt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-6">
-                        <ModalActionStat
-                          label="Total likes"
-                          count={20}
-                          icon={<IoHeart className="size-[20px] text-[var(--red)]" />}
-                        />
-                        <ModalActionStat
-                          label="Total comments"
-                          count={20}
-                          icon={<IoChatbubbleOutline className="size-[19px]" />}
-                        />
-                        <ModalActionStat
-                          label="Total shares"
-                          count={20}
-                          icon={<IoPaperPlaneOutline className="size-[20px]" />}
-                        />
-                      </div>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label="Save post"
-                        className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
-                      >
-                        <IoBookmarkOutline className="size-[20px]" />
-                      </Button>
-                    </div>
-
-                    <div className="relative mt-4">
-                      {isEmojiPickerOpen ? (
-                        <div
-                          ref={emojiPickerRef}
-                          className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
-                        >
-                          <EmojiPicker
-                            onEmojiClick={handleEmojiClick}
-                            emojiStyle={EmojiStyle.NATIVE}
-                            theme={Theme.DARK}
-                            searchDisabled
-                            skinTonesDisabled
-                            width={260}
-                            height={188}
-                            lazyLoadEmojis
-                            previewConfig={{ showPreview: false }}
-                          />
-                        </div>
-                      ) : null}
-
-                      <div className="flex items-center gap-2">
                         <Button
-                          ref={emojiButtonRef}
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label="Add emoji"
-                          onClick={() => setIsEmojiPickerOpen((value) => !value)}
-                          className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                          aria-label="More options"
+                          className="size-6 rounded-full p-0 hover:bg-transparent"
                         >
-                          <IoHappyOutline className="size-6" />
+                          <IoEllipsisHorizontal className="size-6" />
                         </Button>
+                      </div>
 
-                        <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
-                          <input
-                            type="text"
-                            aria-label="Add comment"
-                            placeholder="Add Comment"
-                            value={commentInput}
-                            onChange={(event) => setCommentInput(event.target.value)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                event.preventDefault();
-                                handleSubmitComment();
-                              }
-                            }}
-                            className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
+                      <p className="text-sm text-neutral-25">{POST_CAPTION}</p>
+                    </div>
+
+                    <div className="mt-5 flex min-h-0 flex-1 flex-col">
+                      <h2 className="text-md font-bold text-neutral-25">
+                        Comments
+                      </h2>
+
+                      <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
+                        {comments.length === 0 ? (
+                          commentsContent
+                        ) : (
+                          <div className="grid gap-4 pr-1">
+                            {comments.map((comment) => (
+                              <CommentRow key={comment.id} item={comment} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 border-t border-t-neutral-900 pt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <ModalActionStat
+                            label="Total likes"
+                            count={20}
+                            icon={<IoHeart className="size-6 text-red" />}
                           />
+                          <ModalActionStat
+                            label="Total comments"
+                            count={20}
+                            icon={<IoChatbubbleOutline className="size-6" />}
+                          />
+                          <ModalActionStat
+                            label="Total shares"
+                            count={20}
+                            icon={<IoPaperPlaneOutline className="size-6" />}
+                          />
+                        </div>
 
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Save post"
+                          className="size-6 rounded-none p-0 text-white"
+                        >
+                          <IoBookmarkOutline className="size-6" />
+                        </Button>
+                      </div>
+
+                      <div className="relative mt-4">
+                        {isEmojiPickerOpen ? (
+                          <div
+                            ref={emojiPickerRef}
+                            className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
+                          >
+                            <EmojiPicker
+                              onEmojiClick={handleEmojiClick}
+                              emojiStyle={EmojiStyle.NATIVE}
+                              theme={Theme.DARK}
+                              searchDisabled
+                              skinTonesDisabled
+                              width={260}
+                              height={188}
+                              lazyLoadEmojis
+                              previewConfig={{ showPreview: false }}
+                            />
+                          </div>
+                        ) : null}
+
+                        <div className="flex items-center gap-2">
                           <Button
+                            ref={emojiButtonRef}
                             type="button"
                             variant="ghost"
-                            onClick={handleSubmitComment}
-                            disabled={isPostDisabled}
-                            className={cn(
-                              "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
-                              isPostDisabled
-                                ? "text-[var(--neutral-500)]"
-                                : "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
-                            )}
+                            aria-label="Add emoji"
+                            onClick={() =>
+                              setIsEmojiPickerOpen((value) => !value)
+                            }
+                            className="size-12 rounded-2xl border border-neutral-900 p-0 text-white "
                           >
-                            Post
+                            <IoHappyOutline className="size-6" />
                           </Button>
+
+                          <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2">
+                            <input
+                              type="text"
+                              aria-label="Add comment"
+                              placeholder="Add Comment"
+                              value={commentInput}
+                              onChange={(event) =>
+                                setCommentInput(event.target.value)
+                              }
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  handleSubmitComment();
+                                }
+                              }}
+                              className="h-full min-w-0 flex-1 bg-transparent text-md text-white outline-none placeholder:text-neutral-600 font-medium"
+                            />
+
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={handleSubmitComment}
+                              disabled={isPostDisabled}
+                              className={cn(
+                                "h-auto rounded-none p-0 text-md font-bold hover:bg-transparent",
+                                isPostDisabled
+                                  ? "text-neutral-600"
+                                  : "text-primary-200 hover:text-primary-300",
+                              )}
+                            >
+                              Post
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   </div>
                 </div>
               </div>

@@ -23,8 +23,8 @@ const postImages = [
 
 export default function HomePage() {
   return (
-    <main className="flex w-full flex-1 justify-center px-4 py-4 pb-28 md:px-0 md:py-6 md:pb-32">
-      <section className="flex w-full max-w-[472px] flex-col gap-6">
+    <main className="flex w-full flex-1 justify-center px-4 py-4 pb-28 md:px-0 md:py-0 ">
+      <section className="flex w-full max-w-[600px] flex-col gap-6">
         {postImages.map((post, index) => (
           <div key={post.src} className="grid gap-5">
             <PostCard
@@ -34,7 +34,7 @@ export default function HomePage() {
               hasInitialComments={index === 0}
             />
             {index < postImages.length - 1 ? (
-              <Separator className="bg-[rgba(126,145,183,0.2)]" />
+              <Separator className="bg-neutral-900" />
             ) : null}
           </div>
         ))}
