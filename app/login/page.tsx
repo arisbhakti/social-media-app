@@ -38,8 +38,8 @@ export default function LoginPage() {
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8 ">
-        <Card className="grid w-full gap-10 rounded-3xl border border-neutral-900 box-border bg-black/20 px-8 py-10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-111.5 md:max-w-none  md:px-6 md:py-7">
-          <header className="grid gap-8">
+        <Card className="grid w-full gap-4 md:gap-6 rounded-3xl border border-neutral-900 box-border bg-black/20 px-4 py-8 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-111.5  md:px-6 md:py-10">
+          <header className="grid gap-4 md:gap-6">
             <div className="flex items-center gap-3 justify-center">
               <Image
                 src="/icon-sociality.svg"
@@ -57,43 +57,40 @@ export default function LoginPage() {
             </h1>
           </header>
 
-          <form className="grid gap-6">
-            <div className="grid gap-2">
-              <Label className="text-lg leading-none font-bold" htmlFor="email">
+          <form className="grid gap-5">
+            <div className="grid gap-0.5">
+              <Label className="text-sm font-bold" htmlFor="email">
                 Email
               </Label>
-              <div className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+              <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5">
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
                   placeholder="Enter your email"
-                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-(--base-pure-white) shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label
-                className="text-lg leading-none font-bold"
-                htmlFor="password"
-              >
+            <div className="grid gap-0.5">
+              <Label className="text-sm font-bold" htmlFor="password">
                 Password
               </Label>
-              <InputGroup className="flex h-16 items-center rounded-[18px] border border-[rgba(126,145,183,0.24)] bg-[rgba(6,16,31,0.9)] px-5">
+              <InputGroup className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5">
                 <InputGroupInput
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="Enter your password"
-                  className="text-xl h-full w-full p-0 text-[var(--base-pure-white)] placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-xl h-full w-full p-0 text-white placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
                 />
                 <InputGroupAddon align="inline-end" className="pr-0">
                   <InputGroupButton
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--neutral-500)] transition-colors hover:bg-transparent hover:text-[var(--neutral-300)]"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-(--neutral-500) transition-colors hover:bg-transparent hover:text-(--neutral-300)"
                     aria-label={
                       showPassword
                         ? "Hide password value"
@@ -113,13 +110,13 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="text-xl flex h-16 items-center justify-center rounded-full bg-[linear-gradient(90deg,var(--primary-200)_0%,var(--primary-300)_100%)] font-bold text-[var(--base-pure-white)] transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              className="text-md flex h-11 md:h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,var(--primary-200)_0%,var(--primary-300)_100%)] font-bold text-[var(--base-pure-white)] transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             >
               Login
             </Button>
           </form>
 
-          <p className="text-xl flex items-center justify-center gap-2 leading-none font-bold text-[var(--neutral-700)]">
+          <p className="text-sm md:text-md flex items-center justify-center gap-2 leading-none font-bold text-white">
             <span>Don&apos;t have an account?</span>
             <Link href="/register" className="text-[var(--primary-200)]">
               Register
