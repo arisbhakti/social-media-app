@@ -177,11 +177,11 @@ function FollowUserButton({ following }: { following: boolean }) {
 
 function LikesList() {
   return (
-    <div className="flex max-h-[65vh] flex-col overflow-hidden rounded-4xl  bg-neutral-950 text-neutral-25">
-      <div className="px-6 pt-6 pb-3">
+    <div className="flex flex-col overflow-hidden bg-neutral-950 text-neutral-25">
+      <div className="md:px-6 md:pt-6 md:pb-0">
         <h2 className="text-md md:text-xl font-bold">Likes</h2>
       </div>
-      <div className="grid gap-2 overflow-y-auto px-4 pb-5 sm:px-6">
+      <div className="grid gap-2 overflow-y-auto md:p-5 md:pt-2">
         {LIKED_BY_USERS.map((user) => (
           <div
             key={user.id}
@@ -405,19 +405,20 @@ export function PostCard({
 
       {isMobile ? (
         <Drawer open={isLikesOpen} onOpenChange={setIsLikesOpen}>
-          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0 ">
+          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0! ">
             <DrawerTitle className="sr-only">Likes</DrawerTitle>
-            <div className="relative px-4 pt-5 pb-4">
+            <div className="relative px-4 pt-4 pb-4">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Close likes list"
                 onClick={() => setIsLikesOpen(false)}
-                className="absolute top-5 right-5 z-10 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute -top-8 right-4 z-20 size-6 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
               >
-                <IoClose className="size-8" />
+                <IoClose className="size-6" />
               </Button>
+
               <LikesList />
             </div>
           </DrawerContent>
@@ -433,12 +434,11 @@ export function PostCard({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-sm"
                 aria-label="Close likes list"
                 onClick={() => setIsLikesOpen(false)}
-                className="absolute top-4 right-4 z-10 size-8 rounded-full p-0 text-neutral-25 hover:bg-transparent"
+                className="absolute -top-10 right-0 z-20 size-6 rounded-full p-0 text-white hover:bg-transparent"
               >
-                <IoClose className="size-8" />
+                <IoClose className="size-6" />
               </Button>
               <LikesList />
             </div>
@@ -457,9 +457,9 @@ export function PostCard({
                 size="icon-sm"
                 aria-label="Close comments"
                 onClick={() => handleCommentsOpenChange(false)}
-                className="absolute -top-10 right-4 z-20 size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute -top-10 right-4 z-20 size-6 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
               >
-                <IoClose className="size-8" />
+                <IoClose className="size-6" />
               </Button>
 
               <h2 className="text-md font-bold text-[var(--base-pure-white)]">
