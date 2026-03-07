@@ -113,13 +113,11 @@ export function Header() {
                 size="icon-sm"
                 aria-label="Go back"
                 onClick={handleBack}
-                className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.18)]"
+                className="size-8 rounded-full p-0 text-white hover:bg-[rgba(126,145,183,0.18)]"
               >
                 <IoArrowBackOutline className="size-[20px]" />
               </Button>
-              <span className="truncate text-[26px] leading-[30px] font-bold">
-                {profileTitle}
-              </span>
+              <span className="text-md font-bold">{profileTitle}</span>
             </div>
 
             <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">

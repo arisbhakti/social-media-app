@@ -67,12 +67,12 @@ export function ProfilePage({
 
   const activePosts = useMemo(
     () => (activeTab === "gallery" ? galleryPosts : secondaryPosts),
-    [activeTab, galleryPosts, secondaryPosts]
+    [activeTab, galleryPosts, secondaryPosts],
   );
   const shouldShowEmptyState = activePosts.length === 0;
 
   const renderActionButton = (isMobile = false) => {
-    const widthClass = isMobile ? "flex-1" : "min-w-[160px] px-8";
+    const widthClass = isMobile ? "flex-1" : "min-w-[130px] px-8";
 
     if (isOwnerProfile) {
       return (
@@ -81,8 +81,8 @@ export function ProfilePage({
           variant="ghost"
           onClick={() => router.push("/editprofile")}
           className={cn(
-            "h-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[14px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:h-[48px]",
-            widthClass
+            "h-10 md:h-12 rounded-full border border-neutral-900 bg-transparent font-bold text-sm md:text-md hover:bg-transparent",
+            widthClass,
           )}
         >
           Edit Profile
@@ -97,8 +97,8 @@ export function ProfilePage({
           variant="ghost"
           onClick={() => setIsFollowing(false)}
           className={cn(
-            "h-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[14px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:h-[48px]",
-            widthClass
+            "h-10 md:h-12 rounded-full border border-neutral-900 bg-transparent text-sm md:text-md font-bold ",
+            widthClass,
           )}
         >
           <IoCheckmarkCircleOutline className="size-5 md:size-6" />
@@ -112,8 +112,8 @@ export function ProfilePage({
         type="button"
         onClick={() => setIsFollowing(true)}
         className={cn(
-          "h-[42px] rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[14px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] md:h-[48px]",
-          widthClass
+          "h-10 md:h-12 rounded-full bg-primary-300 text-sm md:text-md font-bold ",
+          widthClass,
         )}
       >
         Follow
@@ -122,22 +122,20 @@ export function ProfilePage({
   };
 
   return (
-    <main className="flex w-full flex-1 justify-center px-4 pt-4 pb-28 md:px-0 md:pt-10 md:pb-32">
-      <section className="w-full max-w-[812px]">
+    <main className="flex w-full flex-1 justify-center px-4 pt-0 pb-28 md:px-0 md:pt-0 md:pb-32">
+      <section className="w-full max-w-203">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-4">
-              <Avatar className="size-[72px] border border-[rgba(126,145,183,0.3)] md:size-[64px]">
+            <div className="flex items-center gap-3 md:gap-5">
+              <Avatar className="size-16 ">
                 <AvatarImage src={avatarSrc} alt={name} />
-                <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <h1 className="truncate text-[18px] leading-[22px] font-bold text-[var(--base-pure-white)]">
-                  {name}
-                </h1>
-                <p className="truncate text-[12px] leading-[18px] text-[var(--neutral-700)]">
-                  {username}
-                </p>
+              <div className="">
+                <h1 className="text-sm md:text-md font-bold">{name}</h1>
+                <p className="text-sm md:text-md">{username}</p>
               </div>
             </div>
           </div>
@@ -149,9 +147,9 @@ export function ProfilePage({
               variant="ghost"
               size="icon"
               aria-label="Share profile"
-              className="size-[48px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] hover:bg-transparent"
+              className="size-10 md:size-12 rounded-full border border-neutral-900 bg-transparent"
             >
-              <IoPaperPlaneOutline className="size-5" />
+              <IoPaperPlaneOutline className="size-5 md:size-6" />
             </Button>
           </div>
         </div>
@@ -169,9 +167,7 @@ export function ProfilePage({
           </Button>
         </div>
 
-        <p className="mt-4 text-[14px] leading-[24px] text-[var(--base-pure-white)] md:text-[14px] md:leading-[28px]">
-          {bio}
-        </p>
+        <p className="mt-4 text-sm md:text-md">{bio}</p>
 
         <div className="mt-3 grid grid-cols-4">
           {statsOrder.map((item, index) => (
@@ -180,13 +176,11 @@ export function ProfilePage({
               className={cn(
                 "flex flex-col items-center px-2",
                 index < statsOrder.length - 1 &&
-                  "border-r border-[rgba(126,145,183,0.2)]"
+                  "border-r border-[rgba(126,145,183,0.2)]",
               )}
             >
-              <p className="text-[32px] leading-[36px] font-bold text-[var(--base-pure-white)] md:text-[32px] md:leading-[36px]">
-                {stats[item.key]}
-              </p>
-              <p className="text-[12px] leading-[18px] text-[var(--neutral-500)] md:text-[12px] md:leading-[18px]">
+              <p className="text-lg md:text-xl font-bold">{stats[item.key]}</p>
+              <p className="text-xs md:text-md text-neutral-400">
                 {item.label}
               </p>
             </div>
@@ -199,10 +193,10 @@ export function ProfilePage({
               type="button"
               onClick={() => setActiveTab("gallery")}
               className={cn(
-                "flex items-center justify-center gap-2 border-b-2 py-3 text-[14px] leading-[20px] font-semibold transition-colors",
+                "flex items-center justify-center gap-2 border-b-2 py-3 text-sm md:text-md transition-colors",
                 activeTab === "gallery"
-                  ? "border-[var(--base-pure-white)] text-[var(--base-pure-white)]"
-                  : "border-transparent text-[var(--neutral-500)]"
+                  ? "border-white text-white font-bold"
+                  : "border-transparent text-neutral-400",
               )}
             >
               <LayoutGrid className="size-5" />
@@ -213,10 +207,10 @@ export function ProfilePage({
               type="button"
               onClick={() => setActiveTab("secondary")}
               className={cn(
-                "flex items-center justify-center gap-2 border-b-2 py-3 text-[14px] leading-[20px] font-medium transition-colors",
+                "flex items-center justify-center gap-2 border-b-2 py-3 text-sm md:text-md transition-colors",
                 activeTab === "secondary"
-                  ? "border-[var(--base-pure-white)] text-[var(--base-pure-white)]"
-                  : "border-transparent text-[var(--neutral-500)]"
+                  ? "border-white text-white font-bold"
+                  : "border-transparent text-neutral-400",
               )}
             >
               {isOwnerProfile ? (
@@ -230,11 +224,11 @@ export function ProfilePage({
         </div>
 
         {shouldShowEmptyState ? (
-          <div className="mx-auto flex min-h-[360px] max-w-[560px] flex-col items-center justify-center px-4 pt-10 text-center md:min-h-[500px] md:pt-16">
-            <h2 className="text-[40px] leading-[44px] font-bold text-[var(--base-pure-white)]">
+          <div className="mx-auto flex min-h-[360px] max-w-113.25 flex-col items-center justify-center px-4  text-center md:min-h-[500px] md:pt-16">
+            <h2 className="text-md md:text-lg font-bold">
               {isOwnerProfile ? "Your story starts here" : "No posts yet"}
             </h2>
-            <p className="mt-3 text-[14px] leading-[24px] text-[var(--neutral-500)] md:max-w-[620px]">
+            <p className="text-sm md:text-md text-neutral-400">
               {isOwnerProfile
                 ? "Share your first post and let the world see your moments, passions, and memories. Make this space truly yours."
                 : "This user has no posts in this tab yet."}
@@ -242,7 +236,7 @@ export function ProfilePage({
             {isOwnerProfile ? (
               <Button
                 type="button"
-                className="mt-8 h-[42px] w-full max-w-[420px] rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[16px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] md:h-[48px] md:max-w-[260px]"
+                className="mt-4 md:mt-6 h-10 md:h-12 w-full max-w-[420px] rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[16px] leading-[20px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] md:max-w-[259px]"
               >
                 Upload My First Post
               </Button>
@@ -251,13 +245,16 @@ export function ProfilePage({
         ) : (
           <div className="mt-4 grid grid-cols-3 gap-0.5 md:mt-6 md:gap-1">
             {activePosts.map((post) => (
-              <div key={post.id} className="relative aspect-square overflow-hidden">
+              <div
+                key={post.id}
+                className="relative aspect-square overflow-hidden"
+              >
                 <Image
                   src={post.src}
                   alt={post.alt}
                   width={500}
                   height={500}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-[2.67px] md:rounded-[6px]"
                 />
               </div>
             ))}
