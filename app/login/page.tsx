@@ -68,7 +68,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="Enter your email"
-                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-(--base-pure-white) shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-(--base-pure-white) shadow-none placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
@@ -83,14 +83,14 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="Enter your password"
-                  className="text-xl h-full w-full p-0 text-white placeholder:text-[var(--neutral-500)] focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-xl h-full w-full p-0 text-white placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                 />
                 <InputGroupAddon align="inline-end" className="pr-0">
                   <InputGroupButton
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-(--neutral-500) transition-colors hover:bg-transparent hover:text-(--neutral-300)"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-transparent hover:text-neutral-300"
                     aria-label={
                       showPassword
                         ? "Hide password value"
@@ -110,7 +110,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="text-md flex h-11 md:h-12 items-center justify-center rounded-full bg-[linear-gradient(90deg,var(--primary-200)_0%,var(--primary-300)_100%)] font-bold text-[var(--base-pure-white)] transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              className="text-md flex h-11 md:h-12 items-center justify-center rounded-full bg-primary-300 font-bold text-base-pure-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             >
               Login
             </Button>
@@ -118,7 +118,7 @@ export default function LoginPage() {
 
           <p className="text-sm md:text-md flex items-center justify-center gap-2 leading-none font-bold text-white">
             <span>Don&apos;t have an account?</span>
-            <Link href="/register" className="text-[var(--primary-200)]">
+            <Link href="/register" className="text-primary-200">
               Register
             </Link>
           </p>
