@@ -7,6 +7,7 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccessToast } from "@/components/ui/app-toast";
 import { myProfileData } from "@/lib/profile-mock";
@@ -45,21 +46,20 @@ function ProfileField({
   autoComplete,
 }: FieldProps) {
   return (
-    <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="block text-[18px] leading-[28px] font-bold text-[var(--base-pure-white)] md:text-[16px] md:leading-[24px]"
-      >
+    <div className="grid gap-0.5">
+      <Label className="text-sm font-bold" htmlFor={id}>
         {label}
-      </label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        autoComplete={autoComplete}
-        onChange={onChange}
-        className="h-[64px] rounded-[16px] border-[rgba(126,145,183,0.2)] bg-[rgba(6,16,31,0.72)] px-4 text-[16px] leading-[24px] text-[var(--base-pure-white)] shadow-none placeholder:text-[rgba(164,167,174,0.7)] focus-visible:border-[rgba(127,81,249,0.88)] focus-visible:ring-0"
-      />
+      </Label>
+      <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5">
+        <Input
+          id={id}
+          type={type}
+          value={value}
+          autoComplete={autoComplete}
+          onChange={onChange}
+          className="text-md h-full w-full border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+        />
+      </div>
     </div>
   );
 }
@@ -141,7 +141,7 @@ export default function EditProfilePage() {
               </Button>
             </div>
 
-            <div className="space-y-5 md:space-y-6">
+            <div className="grid gap-5">
               <ProfileField
                 id="name"
                 label="Name"
@@ -176,26 +176,26 @@ export default function EditProfilePage() {
                 autoComplete="tel"
               />
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="bio"
-                  className="block text-[18px] leading-[28px] font-bold text-[var(--base-pure-white)] md:text-[16px] md:leading-[24px]"
-                >
+              <div className="grid gap-0.5">
+                <Label className="text-sm font-bold" htmlFor="bio">
                   Bio
-                </label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={updateField("bio")}
-                  rows={4}
-                  className="min-h-[140px] rounded-[16px] border-[rgba(126,145,183,0.2)] bg-[rgba(6,16,31,0.72)] px-4 py-4 text-[16px] leading-[34px] text-[var(--base-pure-white)] shadow-none placeholder:text-[rgba(164,167,174,0.7)] focus-visible:border-[rgba(127,81,249,0.88)] focus-visible:ring-0 md:min-h-[132px] md:leading-[36px]"
-                />
+                </Label>
+                <div className="flex min-h-[132px] items-start rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 py-3.5">
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={updateField("bio")}
+                    rows={4}
+                    className="text-md h-full min-h-[104px] w-full resize-none border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+                  />
+                </div>
               </div>
 
               <Button
                 type="submit"
+                variant="ghost"
                 disabled={isSaving}
-                className="mt-2 h-[58px] w-full rounded-full bg-[linear-gradient(90deg,#7f51f9_0%,#6936f2_100%)] text-[16px] leading-[24px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(90deg,#7f51f9_0%,#6936f2_100%)] md:h-[56px]"
+                className="text-md flex h-11 md:h-12 w-full items-center justify-center rounded-full bg-primary-300 font-bold text-base-pure-white transition-transform duration-200 hover:scale-[1.01] hover:bg-primary-200 hover:text-base-pure-white active:scale-[0.99]"
               >
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>

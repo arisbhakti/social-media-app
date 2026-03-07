@@ -54,7 +54,7 @@ export default function AddPostPage() {
 
   const previewUrl = useMemo(
     () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
-    [selectedFile]
+    [selectedFile],
   );
 
   useEffect(() => {
@@ -164,8 +164,8 @@ export default function AddPostPage() {
   const hasImagePreview = Boolean(previewUrl);
 
   return (
-    <main className="flex w-full flex-1 justify-center px-4 pt-6 pb-8 md:px-0 md:pt-10 md:pb-16">
-      <section className="w-full max-w-[812px]">
+    <main className="flex w-full flex-1 justify-center px-4 pt-0 pb-8 md:px-0 md:pb-16">
+      <section className="w-full max-w-[452px]">
         <div className="hidden items-center gap-3 md:flex">
           <Button
             type="button"
@@ -173,22 +173,17 @@ export default function AddPostPage() {
             size="icon-sm"
             aria-label="Go back"
             onClick={handleBack}
-            className="size-[40px] rounded-full border border-[rgba(126,145,183,0.2)] text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.16)]"
+            className="size-8 "
           >
-            <IoArrowBackOutline className="size-[22px]" />
+            <IoArrowBackOutline className="size-8" />
           </Button>
-          <h1 className="text-[44px] leading-[52px] font-bold text-[var(--base-pure-white)]">
-            Add Post
-          </h1>
+          <h1 className="display-xs font-bold">Add Post</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-4 md:mt-8">
-          <div className="w-full md:max-w-[640px]">
+          <div className="w-full">
             <div className="space-y-3">
-              <label
-                htmlFor="post-photo"
-                className="block text-[18px] leading-[28px] font-bold text-[var(--base-pure-white)] md:text-[16px] md:leading-[24px]"
-              >
+              <label htmlFor="post-photo" className="text-sm font-bold">
                 Photo
               </label>
 
@@ -215,16 +210,14 @@ export default function AddPostPage() {
                   }
                 }}
                 className={cn(
-                  "rounded-[16px] border border-dashed bg-[rgba(6,16,31,0.72)] p-5 transition-colors",
+                  "rounded-2xl border border-dashed bg-neutral-950 border-neutral-900 p-5 transition-colors",
                   hasImagePreview
                     ? "min-h-[400px] md:min-h-[530px]"
                     : "min-h-[174px]",
-                  photoError
-                    ? "border-[var(--red)]"
-                    : "border-[rgba(126,145,183,0.24)]",
+                  photoError ? "border-red" : "border-[rgba(126,145,183,0.24)]",
                   isDraggingOver && !photoError
                     ? "border-[rgba(127,81,249,0.9)]"
-                    : ""
+                    : "",
                 )}
                 aria-label="Upload post photo"
               >
@@ -276,8 +269,12 @@ export default function AddPostPage() {
                     </span>
 
                     <p className="text-[16px] leading-[24px] font-medium">
-                      <span className="text-[var(--primary-200)]">Click to upload</span>{" "}
-                      <span className="text-[var(--neutral-500)]">or drag and drop</span>
+                      <span className="text-[var(--primary-200)]">
+                        Click to upload
+                      </span>{" "}
+                      <span className="text-[var(--neutral-500)]">
+                        or drag and drop
+                      </span>
                     </p>
 
                     <p className="text-[16px] leading-[24px] font-semibold text-[var(--neutral-500)]">
@@ -295,10 +292,7 @@ export default function AddPostPage() {
             </div>
 
             <div className="mt-5 space-y-2 md:mt-6">
-              <label
-                htmlFor="caption"
-                className="block text-[18px] leading-[28px] font-bold text-[var(--base-pure-white)] md:text-[16px] md:leading-[24px]"
-              >
+              <label htmlFor="caption" className="font-bold text-sm">
                 Caption
               </label>
 
@@ -309,10 +303,10 @@ export default function AddPostPage() {
                 rows={4}
                 placeholder="Create your caption"
                 className={cn(
-                  "min-h-[150px] rounded-[16px] border-[rgba(126,145,183,0.2)] bg-[rgba(6,16,31,0.72)] px-4 py-4 text-[16px] leading-[28px] text-[var(--base-pure-white)] shadow-none placeholder:text-[rgba(164,167,174,0.55)] focus-visible:ring-0 md:min-h-[132px] md:leading-[32px]",
+                  "min-h-25.25 rounded-2xl border-neutral-900 bg-neutral-950 px-4 py-4 text-md shadow-none placeholder:text-neutral-600 focus-visible:ring-0 placeholder:text-md  ",
                   captionError
-                    ? "border-[var(--red)] focus-visible:border-[var(--red)]"
-                    : "focus-visible:border-[rgba(127,81,249,0.88)]"
+                    ? "border-red focus-visible:border-red"
+                    : "focus-visible:border-[rgba(127,81,249,0.88)]",
                 )}
               />
 
@@ -326,7 +320,7 @@ export default function AddPostPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="mt-5 h-[58px] w-full rounded-full bg-[linear-gradient(90deg,#7f51f9_0%,#6936f2_100%)] text-[16px] leading-[24px] font-semibold text-[var(--base-pure-white)] hover:bg-[linear-gradient(90deg,#7f51f9_0%,#6936f2_100%)] md:mt-6 md:h-[56px]"
+              className="mt-5 h-10 md:h-12 w-full rounded-full bg-primary-300 text-sm md:text-md font-bold md:mt-6"
             >
               {isSubmitting ? "Sharing..." : "Share"}
             </Button>
