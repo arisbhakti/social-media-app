@@ -10,7 +10,7 @@ export default function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
       <Header />
-      {children}
+      <div className="flex flex-1 flex-col pt-[73px]">{children}</div>
     </div>
   );
 }

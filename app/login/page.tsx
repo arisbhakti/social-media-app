@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,var(--base-pure-black)_0%,var(--base-pure-black)_64%,rgba(0,0,0,0.98)_100%)]"
@@ -37,10 +37,10 @@ export default function LoginPage() {
         className="pointer-events-none absolute bottom-[19vh] left-1/2 h-[62vh] w-[132vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(76%_76%_at_50%_46%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.92)_34%,rgba(0,0,0,0.3)_68%,rgba(0,0,0,0)_100%)] blur-[30px]"
       />
 
-      <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">
-        <Card className="grid w-full max-w-[700px] gap-10 rounded-[30px] border border-[rgba(246,249,254,0.16)] bg-[rgba(3,6,12,0.82)] px-8 py-10 text-[var(--base-pure-white)] shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-[456px] md:max-w-none md:rounded-[22px] md:px-6 md:py-7">
+      <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8 ">
+        <Card className="grid w-full gap-10 rounded-3xl border border-neutral-900 box-border bg-black/20 px-8 py-10 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset] backdrop-blur-[2px] md:w-111.5 md:max-w-none  md:px-6 md:py-7">
           <header className="grid gap-8">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 justify-center">
               <Image
                 src="/icon-sociality.svg"
                 alt="Sociality icon"
@@ -48,11 +48,13 @@ export default function LoginPage() {
                 height={34}
                 priority
               />
-              <span className="display-md leading-none font-bold">
+              <span className="display-xs leading-none font-bold">
                 Sociality
               </span>
             </div>
-            <h1 className="display-lg leading-none font-bold">Welcome Back!</h1>
+            <h1 className="text-xl md:display-xs font-bold text-center">
+              Welcome Back!
+            </h1>
           </header>
 
           <form className="grid gap-6">

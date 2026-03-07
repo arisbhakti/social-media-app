@@ -69,7 +69,7 @@ export function Header() {
   };
 
   return (
-    <header className="flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
+    <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
       <div className="hidden h-[72px] items-center justify-between px-[120px] py-0 md:flex">
         <div className="flex items-center gap-3">
           <Image
