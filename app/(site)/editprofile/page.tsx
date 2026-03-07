@@ -103,8 +103,8 @@ export default function EditProfilePage() {
   };
 
   return (
-    <main className="flex w-full flex-1 justify-center px-4 pt-6 pb-8 md:px-0 md:pt-10 md:pb-16">
-      <section className="w-full max-w-[812px]">
+    <main className="flex w-full flex-1 justify-center px-4 pt-0 pb-8 md:px-0 md:pb-16">
+      <section className="w-full max-w-200">
         <div className="hidden items-center gap-3 md:flex">
           <Button
             type="button"
@@ -112,20 +112,21 @@ export default function EditProfilePage() {
             size="icon-sm"
             aria-label="Go back"
             onClick={handleBack}
-            className="size-[40px] rounded-full border border-[rgba(126,145,183,0.2)] text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.16)]"
+            className="size-8"
           >
-            <IoArrowBackOutline className="size-[22px]" />
+            <IoArrowBackOutline className="size-8" />
           </Button>
-          <h1 className="text-[44px] leading-[52px] font-bold text-[var(--base-pure-white)]">
-            Edit Profile
-          </h1>
+          <h1 className="display-xs font-bold ">Edit Profile</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-4 md:mt-8">
           <div className="flex flex-col gap-8 md:grid md:grid-cols-[180px_minmax(0,1fr)] md:items-start md:gap-10">
             <div className="flex flex-col items-center gap-6 pt-2 md:pt-0">
-              <Avatar className="size-[140px] border border-[rgba(126,145,183,0.3)] md:size-[130px]">
-                <AvatarImage src={myProfileData.avatarSrc} alt={myProfileData.name} />
+              <Avatar className="size-20 md:32.5 border border-[rgba(126,145,183,0.3)] md:size-[130px]">
+                <AvatarImage
+                  src={myProfileData.avatarSrc}
+                  alt={myProfileData.name}
+                />
                 <AvatarFallback>
                   {myProfileData.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -134,9 +135,9 @@ export default function EditProfilePage() {
               <Button
                 type="button"
                 variant="ghost"
-                className="h-[52px] w-full max-w-[268px] rounded-full border border-[rgba(126,145,183,0.25)] px-6 text-[16px] leading-[24px] font-semibold text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.12)] hover:text-[var(--base-pure-white)] md:h-[48px]"
+                className="h-10 md:h-12 w-40 rounded-full border border-neutral-900 px-6 font-bold text-sm md:text-md"
               >
-                Change Photo
+                Change Photoss
               </Button>
             </div>
 
