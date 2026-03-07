@@ -68,7 +68,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="Enter your email"
-                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-(--base-pure-white) shadow-none placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
@@ -110,7 +110,8 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="text-md flex h-11 md:h-12 items-center justify-center rounded-full bg-primary-300 font-bold text-base-pure-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              variant="ghost"
+              className="text-md flex h-11 md:h-12 items-center justify-center rounded-full bg-primary-300 font-bold text-base-pure-white hover:bg-primary-200 hover:text-base-pure-white transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
             >
               Login
             </Button>

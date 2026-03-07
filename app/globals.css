@@ -160,25 +160,6 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --neutral-25: #0a0d12;
-    --neutral-50: #181d27;
-    --neutral-100: #252b37;
-    --neutral-200: #414651;
-    --neutral-300: #535862;
-    --neutral-400: #717680;
-    --neutral-500: #a4a7ae;
-    --neutral-600: #aaaaaa;
-    --neutral-700: #e9eaeb;
-    --neutral-800: #dfdfdf;
-    --neutral-900: #dcdcdc;
-    --neutral-950: #fafafa;
-
-    --red: #b41759;
-  }
-}
-
 html,
 body {
   font-family: "sfpro" !important;
@@ -217,6 +198,40 @@ body {
 @utility display-3xl {
   font-size: 56px;
   line-height: 68px;
+}
+
+@layer utilities {
+  .text-primary-100 {
+    color: var(--primary-100);
+  }
+
+  .text-primary-200 {
+    color: var(--primary-200);
+  }
+
+  .text-primary-300 {
+    color: var(--primary-300);
+  }
+
+  .bg-primary-100 {
+    background-color: var(--primary-100);
+  }
+
+  .bg-primary-200 {
+    background-color: var(--primary-200);
+  }
+
+  .bg-primary-300 {
+    background-color: var(--primary-300);
+  }
+
+  .text-base-pure-white {
+    color: var(--base-pure-white);
+  }
+
+  .bg-base-pure-black {
+    background-color: var(--base-pure-black);
+  }
 }
 
 .dark {
