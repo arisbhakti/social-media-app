@@ -44,8 +44,8 @@ export default function LoginPage() {
               <Image
                 src="/icon-sociality.svg"
                 alt="Sociality icon"
-                width={34}
-                height={34}
+                width={30}
+                height={30}
                 priority
               />
               <span className="display-xs leading-none font-bold">
@@ -68,7 +68,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="Enter your email"
-                  className="text-xl h-full w-full border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-md h-full w-full border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                 />
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="Enter your password"
-                  className="text-xl h-full w-full p-0 text-white placeholder:text-neutral-25 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+                  className="text-md h-full w-full p-0 text-white placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                 />
                 <InputGroupAddon align="inline-end" className="pr-0">
                   <InputGroupButton
