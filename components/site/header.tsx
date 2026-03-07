@@ -70,40 +70,40 @@ export function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
-      <div className="hidden h-[72px] items-center justify-between px-[120px] py-0 md:flex">
+      <div className="hidden h-20 items-center justify-between px-30 py-0 md:flex">
         <div className="flex items-center gap-3">
           <Image
             src="/icon-sociality.svg"
             alt="Sociality icon"
-            width={28}
-            height={28}
+            width={30}
+            height={30}
             priority
           />
           <span className="display-xs leading-none font-bold">Sociality</span>
         </div>
 
-        <div className="w-full max-w-[500px]">
+        <div className="w-full max-w-122.75 h-12">
           <div className="relative w-full">
             <IoSearchOutline className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[var(--neutral-500)]" />
             <Input
               type="search"
               placeholder="Search"
               aria-label="Search"
-              className="h-[42px] rounded-full border-[rgba(126,145,183,0.2)] bg-[rgba(6,16,31,0.9)] px-4 pl-11 text-[14px] leading-[20px] text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-[rgba(126,145,183,0.48)] focus-visible:ring-0"
+              className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-[14px] leading-[20px] text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-[rgba(126,145,183,0.48)] focus-visible:ring-0"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
+          <Avatar className="size-12 border border-[rgba(126,145,183,0.32)]">
             <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
-          <span className="text-[14px] leading-[20px] font-bold">John Doe</span>
+          <span className="text-md font-bold">John Doe</span>
         </div>
       </div>
 
-      <div className="flex h-[72px] items-center justify-between px-4 py-0 md:hidden">
+      <div className="flex h-16 items-center justify-between px-4 py-0 md:hidden">
         {isProfileRoute ? (
           <>
             <div className="flex min-w-0 items-center gap-2">
@@ -133,24 +133,26 @@ export function Header() {
               <Image
                 src="/icon-sociality.svg"
                 alt="Sociality icon"
-                width={28}
-                height={28}
+                width={30}
+                height={30}
                 priority
               />
-              <span className="display-xs leading-none font-bold">Sociality</span>
+              <span className="display-xs leading-none font-bold">
+                Sociality
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Open search"
-                className="size-8 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-[rgba(126,145,183,0.18)]"
+                className="size-5 text-neutral-25"
               >
                 <IoSearchOutline className="size-[20px]" />
               </Button>
-              <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
+              <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
                 <AvatarImage src="/dummy-profile-image.png" alt="John Doe" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
