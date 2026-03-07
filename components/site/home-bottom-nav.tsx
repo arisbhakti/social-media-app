@@ -20,9 +20,9 @@ export function HomeBottomNav({
   return (
     <nav
       aria-label="Home navigation"
-      className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4 h-16 md:h-20"
     >
-      <div className="pointer-events-auto flex w-full max-w-[360px] items-center justify-between rounded-full border border-[rgba(126,145,183,0.18)] bg-[rgba(4,11,23,0.95)] px-5 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+      <div className="pointer-events-auto flex w-full max-w-90 items-center justify-between rounded-full border border-neutral-900 bg-neutral-950 px-5 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl">
         <Button
           asChild
           variant="ghost"
@@ -34,6 +34,7 @@ export function HomeBottomNav({
         >
           <Link
             href={homeHref}
+            className="flex flex-col gap-0.5 md:gap-1"
             aria-current={isHomeActive ? "page" : undefined}
           >
             <span
@@ -43,9 +44,9 @@ export function HomeBottomNav({
                   : "bg-[rgba(126,145,183,0.16)]"
               }`}
             >
-              <IoHome className="size-6" />
+              <IoHome className="size-5 md:size-6" />
             </span>
-            <span className="text-md bold">Home</span>
+            <span className="text-xs md:text-md bold">Home</span>
           </Link>
         </Button>
 
@@ -53,7 +54,7 @@ export function HomeBottomNav({
           asChild
           size="icon"
           aria-label="Create post"
-          className="size-14 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)]"
+          className="size-11 md:size-12 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[var(--base-pure-white)] hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)]"
         >
           <Link href="/addpost">
             <IoAdd className="size-7" />
@@ -73,8 +74,8 @@ export function HomeBottomNav({
             href={profileHref}
             aria-current={isProfileActive ? "page" : undefined}
           >
-            <IoPerson className="size-6" />
-            <span className="text-md bold">Profile</span>
+            <IoPerson className="size-5 md:" />
+            <span className="text-xs md:text-md bold">Profile</span>
           </Link>
         </Button>
       </div>
