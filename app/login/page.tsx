@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
+import { saveAuthSession } from "@/lib/auth-session";
 import { useLoginMutation } from "@/lib/tanstack/auth-mutations";
 import { cn } from "@/lib/utils";
 
@@ -133,6 +134,7 @@ export default function LoginPage() {
         password: formValues.password,
       });
 
+      saveAuthSession(response.data.token, response.data.user);
       showSuccessToast(response.message, {
         description: `Selamat datang, ${response.data.user.username}`,
       });
