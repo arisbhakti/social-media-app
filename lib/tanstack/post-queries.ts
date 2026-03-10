@@ -55,6 +55,43 @@ export type PostsSuccessResponse = {
   data: PostsData;
 };
 
+type MyPostsData = {
+  items: PostItem[];
+  pagination: PostsPagination;
+};
+
+export type MyPostsSuccessResponse = {
+  success: true;
+  message: string;
+  data: MyPostsData;
+};
+
+export type MyProfile = {
+  id: number;
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  bio: string | null;
+  avatarUrl: string | null;
+};
+
+type MyProfileData = {
+  profile: MyProfile;
+  stats: {
+    posts: number;
+    followers: number;
+    following: number;
+    likes: number;
+  };
+};
+
+export type MyProfileSuccessResponse = {
+  success: true;
+  message: string;
+  data: MyProfileData;
+};
+
 type LikedPostItem = PostItem & {
   likedAt: string;
 };
@@ -70,7 +107,7 @@ export type MyLikedPostsSuccessResponse = {
   data: MyLikedPostsData;
 };
 
-type SavedPostItem = {
+export type SavedPostItem = {
   id: number;
   imageUrl: string;
   caption: string;
@@ -88,7 +125,7 @@ export type MySavedPostsSuccessResponse = {
   data: MySavedPostsData;
 };
 
-type FollowingUserItem = {
+export type FollowUserItem = {
   id: number;
   username: string;
   name: string;
@@ -97,7 +134,7 @@ type FollowingUserItem = {
 };
 
 type MyFollowingData = {
-  users: FollowingUserItem[];
+  users: FollowUserItem[];
   pagination: PostsPagination;
 };
 
@@ -105,6 +142,17 @@ export type MyFollowingSuccessResponse = {
   success: true;
   message: string;
   data: MyFollowingData;
+};
+
+type MyFollowersData = {
+  users: FollowUserItem[];
+  pagination: PostsPagination;
+};
+
+export type MyFollowersSuccessResponse = {
+  success: true;
+  message: string;
+  data: MyFollowersData;
 };
 
 export type PostLikeUser = {
@@ -232,7 +280,7 @@ type TogglePostSaveContext = {
 };
 
 type ToggleFollowVariables = {
-  postId: number;
+  postId?: number;
   userId: number;
   username: string;
   following: boolean;
@@ -249,8 +297,13 @@ type CreatePostVariables = {
 };
 
 type ToggleFollowContext = {
+  hasValidPostId: boolean;
+  optimisticFollowingDelta: number;
   previousPostLikesQueries: Array<[QueryKey, PostLikesInfiniteData | undefined]>;
   previousFollowingIdQueries: Array<[QueryKey, number[] | undefined]>;
+  previousProfileQueries: Array<[QueryKey, MyProfileSuccessResponse | undefined]>;
+  previousFollowingQueries: Array<[QueryKey, MyFollowingInfiniteData | undefined]>;
+  previousFollowersQueries: Array<[QueryKey, MyFollowersInfiniteData | undefined]>;
 };
 
 type ToggleLikeMutationOptions = {
@@ -283,6 +336,14 @@ export const postQueryKeys = {
   feedInfinite: (limit = 20) => ["posts", "infinite", limit] as const,
   likedPostIds: (limit = 50) => ["posts", "liked", "ids", limit] as const,
   savedPostIds: (limit = 50) => ["posts", "saved", "ids", limit] as const,
+  meProfile: () => ["me", "profile"] as const,
+  myPostsInfinite: (limit = 9) => ["me", "posts", "infinite", limit] as const,
+  mySavedPostsInfinite: (limit = 9) =>
+    ["me", "saved", "infinite", limit] as const,
+  myFollowingInfinite: (limit = 10) =>
+    ["me", "following", "infinite", limit] as const,
+  myFollowersInfinite: (limit = 10) =>
+    ["me", "followers", "infinite", limit] as const,
   postLikesInfinite: (postId: number, limit = 20) =>
     ["posts", postId, "likes", "infinite", limit] as const,
   postComments: (postId: number, page = 1, limit = 10) =>
@@ -292,6 +353,8 @@ export const postQueryKeys = {
 };
 
 type PostsInfiniteData = InfiniteData<PostsSuccessResponse, number>;
+type MyFollowingInfiniteData = InfiniteData<MyFollowingSuccessResponse, number>;
+type MyFollowersInfiniteData = InfiniteData<MyFollowersSuccessResponse, number>;
 type PostLikesInfiniteData = InfiniteData<PostLikesSuccessResponse, number>;
 
 export class ApiError extends Error {
@@ -374,6 +437,29 @@ async function fetchPosts({
   );
 }
 
+async function fetchMyProfile(): Promise<MyProfileSuccessResponse> {
+  return requestApi<MyProfileData>(
+    "/api/me",
+    {
+      method: "GET",
+    },
+    "Failed to fetch profile"
+  );
+}
+
+async function fetchMyPosts({
+  page,
+  limit,
+}: FetchCollectionParams): Promise<MyPostsSuccessResponse> {
+  return requestApi<MyPostsData>(
+    `/api/me/posts?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch my posts"
+  );
+}
+
 async function fetchMyLikedPosts({
   page,
   limit,
@@ -410,6 +496,19 @@ async function fetchMyFollowing({
       method: "GET",
     },
     "Failed to fetch following users"
+  );
+}
+
+async function fetchMyFollowers({
+  page,
+  limit,
+}: FetchCollectionParams): Promise<MyFollowersSuccessResponse> {
+  return requestApi<MyFollowersData>(
+    `/api/me/followers?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch followers"
   );
 }
 
@@ -680,6 +779,103 @@ function updatePostLikesInInfiniteData(
   };
 }
 
+function updateUsersInInfiniteData<
+  TPageData extends {
+    data: {
+      users: FollowUserItem[];
+      pagination: PostsPagination;
+    };
+  },
+>(
+  source: InfiniteData<TPageData, number> | undefined,
+  userId: number,
+  updater: (user: FollowUserItem) => FollowUserItem
+) {
+  if (!source) {
+    return source;
+  }
+
+  return {
+    ...source,
+    pages: source.pages.map((page) => ({
+      ...page,
+      data: {
+        ...page.data,
+        users: page.data.users.map((user) =>
+          user.id === userId ? updater(user) : user
+        ),
+      },
+    })),
+  };
+}
+
+function removeUserFromUsersInfiniteData<
+  TPageData extends {
+    data: {
+      users: FollowUserItem[];
+      pagination: PostsPagination;
+    };
+  },
+>(
+  source: InfiniteData<TPageData, number> | undefined,
+  userId: number
+) {
+  if (!source) {
+    return source;
+  }
+
+  const hasUser = source.pages.some((page) =>
+    page.data.users.some((user) => user.id === userId)
+  );
+  if (!hasUser) {
+    return source;
+  }
+
+  return {
+    ...source,
+    pages: source.pages.map((page) => {
+      const nextTotal = Math.max(0, page.data.pagination.total - 1);
+      const nextTotalPages =
+        page.data.pagination.limit > 0
+          ? Math.max(1, Math.ceil(nextTotal / page.data.pagination.limit))
+          : page.data.pagination.totalPages;
+
+      return {
+        ...page,
+        data: {
+          ...page.data,
+          users: page.data.users.filter((user) => user.id !== userId),
+          pagination: {
+            ...page.data.pagination,
+            total: nextTotal,
+            totalPages: nextTotalPages,
+          },
+        },
+      };
+    }),
+  };
+}
+
+function adjustFollowingCountInProfile(
+  source: MyProfileSuccessResponse | undefined,
+  delta: number
+) {
+  if (!source || delta === 0) {
+    return source;
+  }
+
+  return {
+    ...source,
+    data: {
+      ...source.data,
+      stats: {
+        ...source.data.stats,
+        following: Math.max(0, source.data.stats.following + delta),
+      },
+    },
+  };
+}
+
 function updateIdsArray(
   source: number[] | undefined,
   itemId: number,
@@ -766,6 +962,98 @@ export function usePostsInfiniteQuery(limit = 20) {
 
       return page + 1;
     },
+  });
+}
+
+export function useMyProfileQuery(enabled = true) {
+  return useQuery({
+    queryKey: postQueryKeys.meProfile(),
+    queryFn: fetchMyProfile,
+    enabled,
+  });
+}
+
+export function useMyPostsInfiniteQuery(limit = 9, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.myPostsInfinite(limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchMyPosts({
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled,
+  });
+}
+
+export function useMySavedPostsInfiniteQuery(limit = 9, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.mySavedPostsInfinite(limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchMySavedPosts({
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled,
+  });
+}
+
+export function useMyFollowingInfiniteQuery(limit = 10, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.myFollowingInfinite(limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchMyFollowing({
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled,
+  });
+}
+
+export function useMyFollowersInfiniteQuery(limit = 10, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.myFollowersInfinite(limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchMyFollowers({
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled,
   });
 }
 
@@ -1179,41 +1467,119 @@ export function useToggleFollowMutation(
     mutationKey: ["follow", "toggle"],
     mutationFn: toggleFollow,
     onMutate: async (variables) => {
-      await Promise.all([
-        queryClient.cancelQueries({
-          queryKey: ["posts", variables.postId, "likes", "infinite"],
-        }),
+      const hasValidPostId =
+        typeof variables.postId === "number" && variables.postId > 0;
+      const optimisticFollowingState = !variables.following;
+      const optimisticFollowingDelta = variables.following ? -1 : 1;
+
+      const cancelQueriesTasks = [
         queryClient.cancelQueries({
           queryKey: ["me", "following", "ids"],
         }),
-      ]);
+        queryClient.cancelQueries({
+          queryKey: postQueryKeys.meProfile(),
+        }),
+        queryClient.cancelQueries({
+          queryKey: ["me", "following", "infinite"],
+        }),
+        queryClient.cancelQueries({
+          queryKey: ["me", "followers", "infinite"],
+        }),
+      ];
 
-      const previousPostLikesQueries =
-        queryClient.getQueriesData<PostLikesInfiniteData>({
-          queryKey: ["posts", variables.postId, "likes", "infinite"],
-        });
+      if (hasValidPostId) {
+        cancelQueriesTasks.push(
+          queryClient.cancelQueries({
+            queryKey: ["posts", variables.postId, "likes", "infinite"],
+          })
+        );
+      }
+
+      await Promise.all(cancelQueriesTasks);
+
+      const previousPostLikesQueries = hasValidPostId
+        ? queryClient.getQueriesData<PostLikesInfiniteData>({
+            queryKey: ["posts", variables.postId, "likes", "infinite"],
+          })
+        : [];
       const previousFollowingIdQueries = queryClient.getQueriesData<number[]>({
         queryKey: ["me", "following", "ids"],
       });
+      const previousProfileQueries =
+        queryClient.getQueriesData<MyProfileSuccessResponse>({
+          queryKey: postQueryKeys.meProfile(),
+        });
+      const previousFollowingQueries =
+        queryClient.getQueriesData<MyFollowingInfiniteData>({
+          queryKey: ["me", "following", "infinite"],
+        });
+      const previousFollowersQueries =
+        queryClient.getQueriesData<MyFollowersInfiniteData>({
+          queryKey: ["me", "followers", "infinite"],
+        });
 
-      previousPostLikesQueries.forEach(([queryKey]) => {
-        queryClient.setQueryData<PostLikesInfiniteData>(queryKey, (oldData) =>
-          updatePostLikesInInfiniteData(oldData, variables.userId, (user) => ({
+      if (hasValidPostId) {
+        previousPostLikesQueries.forEach(([queryKey]) => {
+          queryClient.setQueryData<PostLikesInfiniteData>(queryKey, (oldData) =>
+            updatePostLikesInInfiniteData(oldData, variables.userId, (user) => ({
+              ...user,
+              isFollowedByMe: optimisticFollowingState,
+            }))
+          );
+        });
+      }
+
+      previousFollowingIdQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<number[]>(queryKey, (oldData) =>
+          updateIdsArray(oldData, variables.userId, optimisticFollowingState)
+        );
+      });
+
+      previousProfileQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<MyProfileSuccessResponse>(queryKey, (oldData) =>
+          adjustFollowingCountInProfile(oldData, optimisticFollowingDelta)
+        );
+      });
+
+      previousFollowingQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<MyFollowingInfiniteData>(queryKey, (oldData) => {
+          const updatedFollowingUsers = updateUsersInInfiniteData(
+            oldData,
+            variables.userId,
+            (user) => ({
+              ...user,
+              isFollowedByMe: optimisticFollowingState,
+            })
+          );
+
+          if (!optimisticFollowingState) {
+            return removeUserFromUsersInfiniteData(
+              updatedFollowingUsers,
+              variables.userId
+            );
+          }
+
+          return updatedFollowingUsers;
+        });
+      });
+
+      previousFollowersQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<MyFollowersInfiniteData>(queryKey, (oldData) =>
+          updateUsersInInfiniteData(oldData, variables.userId, (user) => ({
             ...user,
-            isFollowedByMe: !variables.following,
+            isFollowedByMe: optimisticFollowingState,
           }))
         );
       });
 
-      previousFollowingIdQueries.forEach(([queryKey]) => {
-        queryClient.setQueryData<number[]>(queryKey, (oldData) =>
-          updateIdsArray(oldData, variables.userId, !variables.following)
-        );
-      });
-
       return {
+        hasValidPostId,
+        optimisticFollowingDelta,
         previousPostLikesQueries,
         previousFollowingIdQueries,
+        previousProfileQueries,
+        previousFollowingQueries,
+        previousFollowersQueries,
       };
     },
     onError: (error, _variables, context) => {
@@ -1221,6 +1587,15 @@ export function useToggleFollowMutation(
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousFollowingIdQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousProfileQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousFollowingQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousFollowersQueries.forEach(([queryKey, oldData]) => {
         queryClient.setQueryData(queryKey, oldData);
       });
 
@@ -1233,21 +1608,23 @@ export function useToggleFollowMutation(
         });
       }
     },
-    onSuccess: (result, variables) => {
+    onSuccess: (result, variables, context) => {
       const isNowFollowing = result.data.following;
 
-      queryClient
-        .getQueriesData<PostLikesInfiniteData>({
-          queryKey: ["posts", variables.postId, "likes", "infinite"],
-        })
-        .forEach(([queryKey]) => {
-          queryClient.setQueryData<PostLikesInfiniteData>(queryKey, (oldData) =>
-            updatePostLikesInInfiniteData(oldData, variables.userId, (user) => ({
-              ...user,
-              isFollowedByMe: isNowFollowing,
-            }))
-          );
-        });
+      if (context?.hasValidPostId) {
+        queryClient
+          .getQueriesData<PostLikesInfiniteData>({
+            queryKey: ["posts", variables.postId, "likes", "infinite"],
+          })
+          .forEach(([queryKey]) => {
+            queryClient.setQueryData<PostLikesInfiniteData>(queryKey, (oldData) =>
+              updatePostLikesInInfiniteData(oldData, variables.userId, (user) => ({
+                ...user,
+                isFollowedByMe: isNowFollowing,
+              }))
+            );
+          });
+      }
 
       queryClient
         .getQueriesData<number[]>({
@@ -1259,16 +1636,86 @@ export function useToggleFollowMutation(
           );
         });
 
+      queryClient
+        .getQueriesData<MyFollowingInfiniteData>({
+          queryKey: ["me", "following", "infinite"],
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<MyFollowingInfiniteData>(queryKey, (oldData) => {
+            const updatedFollowingUsers = updateUsersInInfiniteData(
+              oldData,
+              variables.userId,
+              (user) => ({
+                ...user,
+                isFollowedByMe: isNowFollowing,
+              })
+            );
+
+            if (!isNowFollowing) {
+              return removeUserFromUsersInfiniteData(
+                updatedFollowingUsers,
+                variables.userId
+              );
+            }
+
+            return updatedFollowingUsers;
+          });
+        });
+
+      queryClient
+        .getQueriesData<MyFollowersInfiniteData>({
+          queryKey: ["me", "followers", "infinite"],
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<MyFollowersInfiniteData>(queryKey, (oldData) =>
+            updateUsersInInfiniteData(oldData, variables.userId, (user) => ({
+              ...user,
+              isFollowedByMe: isNowFollowing,
+            }))
+          );
+        });
+
+      const actualFollowingDelta =
+        variables.following === isNowFollowing ? 0 : isNowFollowing ? 1 : -1;
+      const correctionDelta =
+        actualFollowingDelta - (context?.optimisticFollowingDelta ?? 0);
+
+      if (correctionDelta !== 0) {
+        queryClient
+          .getQueriesData<MyProfileSuccessResponse>({
+            queryKey: postQueryKeys.meProfile(),
+          })
+          .forEach(([queryKey]) => {
+            queryClient.setQueryData<MyProfileSuccessResponse>(
+              queryKey,
+              (oldData) =>
+                adjustFollowingCountInProfile(oldData, correctionDelta)
+            );
+          });
+      }
+
       if (showToast) {
         showSuccessToast(result.message);
       }
     },
-    onSettled: (_result, _error, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["posts", variables.postId, "likes", "infinite"],
-      });
+    onSettled: (_result, _error, variables, context) => {
+      if (context?.hasValidPostId) {
+        queryClient.invalidateQueries({
+          queryKey: ["posts", variables.postId, "likes", "infinite"],
+        });
+      }
+
       queryClient.invalidateQueries({
         queryKey: ["me", "following", "ids"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.meProfile(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["me", "following", "infinite"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["me", "followers", "infinite"],
       });
     },
   });

@@ -1,16 +1,5 @@
-import { ProfilePage } from "@/components/site/profile-page";
-import { galleryPosts, myProfileData, savedPosts } from "@/lib/profile-mock";
+import { MyProfilePage } from "@/components/site/my-profile-page";
 
-export default function MyProfilePage() {
-  return (
-    <ProfilePage
-      mode="self"
-      name={myProfileData.name}
-      username={myProfileData.username}
-      bio={myProfileData.bio}
-      stats={myProfileData.stats}
-      galleryPosts={galleryPosts}
-      secondaryPosts={savedPosts}
-    />
-  );
+export default function Page() {
+  return <MyProfilePage />;
 }
