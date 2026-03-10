@@ -2,13 +2,12 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 
 import {
   IoBookmarkOutline,
   IoChatbubbleOutline,
-  IoCheckmarkCircleOutline,
   IoClose,
   IoEllipsisHorizontal,
   IoHappyOutline,
@@ -17,215 +16,30 @@ import {
   IoPaperPlaneOutline,
 } from "react-icons/io5";
 
-import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ActionButton } from "@/components/site/post-card/action-button";
+import { CommentRow } from "@/components/site/post-card/comment-row";
+import {
+  DEFAULT_COMMENTS,
+  POST_CAPTION,
+} from "@/components/site/post-card/constants";
+import { LikesList } from "@/components/site/post-card/likes-list";
+import { ModalActionStat } from "@/components/site/post-card/modal-action-stat";
+import type {
+  CommentItem,
+  PostCardProps,
+} from "@/components/site/post-card/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { cn } from "@/lib/utils";
 
 const EmojiPicker = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.default),
   { ssr: false },
 );
-
-type PostCardProps = {
-  imageSrc: string;
-  imageAlt: string;
-  liked?: boolean;
-  hasInitialComments?: boolean;
-};
-
-type LikeUser = {
-  id: number;
-  name: string;
-  username: string;
-  following: boolean;
-};
-
-type CommentItem = {
-  id: number;
-  name: string;
-  content: string;
-  createdAt: string;
-};
-
-const LIKED_BY_USERS: LikeUser[] = [
-  { id: 1, name: "John Doe", username: "johndoe", following: true },
-  { id: 2, name: "John Doe", username: "johndoe", following: true },
-  { id: 3, name: "John Doe", username: "johndoe", following: false },
-  { id: 4, name: "John Doe", username: "johndoe", following: false },
-  { id: 5, name: "John Doe", username: "johndoe", following: false },
-  { id: 6, name: "John Doe", username: "johndoe", following: false },
-];
-
-const DEFAULT_COMMENTS: CommentItem[] = [
-  {
-    id: 1,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 2,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 3,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 4,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 5,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 6,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-  {
-    id: 7,
-    name: "Alexander",
-    content: "This is the kind of love everyone dreams about ✨",
-    createdAt: "1 Minute Ago",
-  },
-];
-
-const POST_CAPTION =
-  "Creating unforgettable moments with my favorite person! 📸✨ Every laugh, every little adventure, every quiet moment together feels like magic. You make ordinary days feel extraordinary, and I'm so grateful to share this journey with you. Let's keep cherishing every second, because with you, time always feels too short. 💕";
-
-function ActionButton({
-  label,
-  count,
-  icon,
-  onClick,
-}: {
-  label: string;
-  count: number;
-  icon: ReactNode;
-  onClick?: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      aria-label={label}
-      onClick={onClick}
-      className="h-auto gap-1.5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
-    >
-      <span className="flex size-6 items-center justify-center">{icon}</span>
-      <span className="text-sm font-semibold md:text-md">{count}</span>
-    </Button>
-  );
-}
-
-function ModalActionStat({
-  label,
-  count,
-  icon,
-}: {
-  label: string;
-  count: number;
-  icon: ReactNode;
-}) {
-  return (
-    <div aria-label={label} className="flex items-center gap-2">
-      <span className="flex size-5 items-center justify-center">{icon}</span>
-      <span className="text-md font-semibold">{count}</span>
-    </div>
-  );
-}
-
-function FollowUserButton({ following }: { following: boolean }) {
-  if (following) {
-    return (
-      <Button
-        type="button"
-        variant="ghost"
-        className="h-10  rounded-full border border-neutral-900 px-7 text-sm font-semibold py-2"
-      >
-        <IoCheckmarkCircleOutline className="size-5" />
-        Following
-      </Button>
-    );
-  }
-
-  return (
-    <Button
-      type="button"
-      className="h-10 rounded-full bg-primary-300 px-7 text-sm font-bold "
-    >
-      Follow
-    </Button>
-  );
-}
-
-function LikesList() {
-  return (
-    <div className="flex flex-col overflow-hidden bg-neutral-950 text-neutral-25">
-      <div className="md:px-6 md:pt-6 md:pb-0">
-        <h2 className="text-md md:text-xl font-bold">Likes</h2>
-      </div>
-      <div className="grid gap-2 overflow-y-auto md:p-5 md:pt-2">
-        {LIKED_BY_USERS.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center justify-between gap-3 rounded-[14px] py-1.5"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <Avatar className="size-12 border border-[rgba(126,145,183,0.24)]">
-                  <AvatarImage src="/dummy-profile-image.png" alt={user.name} />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className=" text-sm font-bold ">{user.name}</p>
-                  <p className=" text-sm text-neutral-400">{user.username}</p>
-                </div>
-              </div>
-            </div>
-            <FollowUserButton following={user.following} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CommentRow({ item }: { item: CommentItem }) {
-  return (
-    <div className="border-b border-neutral-900 pb-3 md:pb-4 last:border-b-0 last:pb-0 flex flex-col gap-2 md:gap-2.5">
-      <div className="flex items-center gap-2">
-        <Avatar className="size-10 ">
-          <AvatarImage src="/dummy-profile-image.png" alt={item.name} />
-          <AvatarFallback>{item.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="grid gap-0">
-          <span className="text-xs md:text-sm font-bold md:-mb-0.5 -mb-1">
-            {item.name}
-          </span>
-          <span className="text-xs text-neutral-400">{item.createdAt}</span>
-        </div>
-      </div>
-      <p className="text-sm">{item.content}</p>
-    </div>
-  );
-}
 
 export function PostCard({
   imageSrc,
