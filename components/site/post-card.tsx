@@ -19,10 +19,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ActionButton } from "@/components/site/post-card/action-button";
 import { CommentRow } from "@/components/site/post-card/comment-row";
-import {
-  DEFAULT_COMMENTS,
-  POST_CAPTION,
-} from "@/components/site/post-card/constants";
+import { DEFAULT_COMMENTS } from "@/components/site/post-card/constants";
 import { LikesList } from "@/components/site/post-card/likes-list";
 import { ModalActionStat } from "@/components/site/post-card/modal-action-stat";
 import type {
@@ -43,13 +40,20 @@ const EmojiPicker = dynamic(
 
 export function PostCard({
   imageSrc,
-  imageAlt,
+  imageAlt = "Post image",
   liked = false,
   hasInitialComments = false,
+  authorName = "Johndoe",
+  authorAvatarUrl,
+  caption = "",
+  createdAtLabel = "Just now",
+  likeCount = 0,
+  commentCount = 0,
 }: PostCardProps) {
   const [isLikesOpen, setIsLikesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<CommentItem[]>(() =>
     hasInitialComments ? [...DEFAULT_COMMENTS] : [],
@@ -61,6 +65,13 @@ export function PostCard({
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
   const isMobile = useIsMobile();
   const isPostDisabled = commentInput.trim().length === 0;
+  const normalizedCaption = caption.trim() || "-";
+  const hasLongCaption = normalizedCaption.length > 140;
+  const visibleCaption =
+    hasLongCaption && !isCaptionExpanded
+      ? `${normalizedCaption.slice(0, 140)}...`
+      : normalizedCaption;
+  const avatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
@@ -143,13 +154,16 @@ export function PostCard({
       <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-white shadow-none">
         <div className="flex items-center gap-2 md:gap-3">
           <Avatar className="size-11 md:size-16 border border-[rgba(126,145,183,0.32)]">
-            <AvatarImage src="/dummy-profile-image.png" alt="Johndoe" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage
+              src={authorAvatarUrl ?? "/dummy-profile-image.png"}
+              alt={authorName}
+            />
+            <AvatarFallback>{avatarFallback}</AvatarFallback>
           </Avatar>
           <div className="grid gap-0">
-            <span className="text-sm md:text-md font-bold">Johndoe</span>
+            <span className="text-sm md:text-md font-bold">{authorName}</span>
             <span className="text-xs md:text-sm text-neutral-400">
-              1 Minutes Ago
+              {createdAtLabel}
             </span>
           </div>
         </div>
@@ -168,7 +182,7 @@ export function PostCard({
           <div className="flex items-center gap-3 md:gap-4">
             <ActionButton
               label="Open likes list"
-              count={20}
+              count={likeCount}
               onClick={() => setIsLikesOpen(true)}
               icon={
                 liked ? (
@@ -180,13 +194,13 @@ export function PostCard({
             />
             <ActionButton
               label="Open comments"
-              count={20}
+              count={commentCount}
               onClick={handleOpenComments}
               icon={<IoChatbubbleOutline className="size-6" />}
             />
             <ActionButton
               label="Share post"
-              count={20}
+              count={0}
               icon={<IoPaperPlaneOutline className="size-6" />}
             />
           </div>
@@ -202,18 +216,18 @@ export function PostCard({
         </div>
 
         <div className="grid gap-0 md:gap-1">
-          <span className="text-sm md:text-md font-bold">Johndoe</span>
-          <p className="text-sm md:text-md text-neutral-25">
-            Creating unforgettable moments with my favorite person! Let&apos;s
-            cherish every second together! ...
-          </p>
-          <Button
-            type="button"
-            variant="link"
-            className="h-auto w-fit p-0 text-sm md:text-md font-bold text-primary-200"
-          >
-            Show More
-          </Button>
+          <span className="text-sm md:text-md font-bold">{authorName}</span>
+          <p className="text-sm md:text-md text-neutral-25">{visibleCaption}</p>
+          {hasLongCaption ? (
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setIsCaptionExpanded((value) => !value)}
+              className="h-auto w-fit p-0 text-sm md:text-md font-bold text-primary-200"
+            >
+              {isCaptionExpanded ? "Show Less" : "Show More"}
+            </Button>
+          ) : null}
         </div>
       </Card>
 
@@ -397,15 +411,17 @@ export function PostCard({
                         <div className="flex items-center gap-3">
                           <Avatar className="size-10 ">
                             <AvatarImage
-                              src="/dummy-profile-image.png"
-                              alt="John Doe"
+                              src={authorAvatarUrl ?? "/dummy-profile-image.png"}
+                              alt={authorName}
                             />
-                            <AvatarFallback>JD</AvatarFallback>
+                            <AvatarFallback>{avatarFallback}</AvatarFallback>
                           </Avatar>
                           <div className="grid gap-0.5">
-                            <span className="text-sm font-bold">John Doe</span>
+                            <span className="text-sm font-bold">
+                              {authorName}
+                            </span>
                             <span className="text-xs text-neutral-400">
-                              1 Minutes Ago
+                              {createdAtLabel}
                             </span>
                           </div>
                         </div>
@@ -421,7 +437,7 @@ export function PostCard({
                         </Button>
                       </div>
 
-                      <p className="text-sm text-neutral-25">{POST_CAPTION}</p>
+                      <p className="text-sm text-neutral-25">{normalizedCaption}</p>
                     </div>
 
                     <div className="mt-5 flex min-h-0 flex-1 flex-col">
@@ -447,17 +463,23 @@ export function PostCard({
                         <div className="flex items-center gap-4">
                           <ModalActionStat
                             label="Total likes"
-                            count={20}
-                            icon={<IoHeart className="size-6 text-red" />}
+                            count={likeCount}
+                            icon={
+                              liked ? (
+                                <IoHeart className="size-6 text-red" />
+                              ) : (
+                                <IoHeartOutline className="size-6" />
+                              )
+                            }
                           />
                           <ModalActionStat
                             label="Total comments"
-                            count={20}
+                            count={commentCount}
                             icon={<IoChatbubbleOutline className="size-6" />}
                           />
                           <ModalActionStat
                             label="Total shares"
-                            count={20}
+                            count={0}
                             icon={<IoPaperPlaneOutline className="size-6" />}
                           />
                         </div>
