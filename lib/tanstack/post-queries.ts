@@ -34,6 +34,7 @@ export type PostItem = {
   likeCount: number;
   commentCount: number;
   likedByMe: boolean;
+  savedByMe?: boolean;
 };
 
 type PostsPagination = {
@@ -67,6 +68,24 @@ export type MyLikedPostsSuccessResponse = {
   success: true;
   message: string;
   data: MyLikedPostsData;
+};
+
+type SavedPostItem = {
+  id: number;
+  imageUrl: string;
+  caption: string;
+  createdAt: string;
+};
+
+type MySavedPostsData = {
+  posts: SavedPostItem[];
+  pagination: PostsPagination;
+};
+
+export type MySavedPostsSuccessResponse = {
+  success: true;
+  message: string;
+  data: MySavedPostsData;
 };
 
 type FollowingUserItem = {
@@ -120,6 +139,16 @@ type TogglePostLikeSuccessResponse = {
   data: TogglePostLikeData;
 };
 
+type TogglePostSaveData = {
+  saved: boolean;
+};
+
+type TogglePostSaveSuccessResponse = {
+  success: true;
+  message: string;
+  data: TogglePostSaveData;
+};
+
 type ToggleFollowData = {
   following: boolean;
 };
@@ -150,6 +179,16 @@ type TogglePostLikeContext = {
   previousLikedIdQueries: Array<[QueryKey, number[] | undefined]>;
 };
 
+type TogglePostSaveVariables = {
+  postId: number;
+  saved: boolean;
+};
+
+type TogglePostSaveContext = {
+  previousPostQueries: Array<[QueryKey, PostsInfiniteData | undefined]>;
+  previousSavedIdQueries: Array<[QueryKey, number[] | undefined]>;
+};
+
 type ToggleFollowVariables = {
   postId: number;
   userId: number;
@@ -166,6 +205,10 @@ type ToggleLikeMutationOptions = {
   showToast?: boolean;
 };
 
+type ToggleSaveMutationOptions = {
+  showToast?: boolean;
+};
+
 type ToggleFollowMutationOptions = {
   showToast?: boolean;
 };
@@ -177,6 +220,7 @@ type RequestApiInit = RequestInit & {
 export const postQueryKeys = {
   feedInfinite: (limit = 20) => ["posts", "infinite", limit] as const,
   likedPostIds: (limit = 50) => ["posts", "liked", "ids", limit] as const,
+  savedPostIds: (limit = 50) => ["posts", "saved", "ids", limit] as const,
   postLikesInfinite: (postId: number, limit = 20) =>
     ["posts", postId, "likes", "infinite", limit] as const,
   followingUserIds: (limit = 50) => ["me", "following", "ids", limit] as const,
@@ -278,6 +322,19 @@ async function fetchMyLikedPosts({
   );
 }
 
+async function fetchMySavedPosts({
+  page,
+  limit,
+}: FetchCollectionParams): Promise<MySavedPostsSuccessResponse> {
+  return requestApi<MySavedPostsData>(
+    `/api/me/saved?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch saved posts"
+  );
+}
+
 async function fetchMyFollowing({
   page,
   limit,
@@ -329,6 +386,28 @@ async function fetchAllLikedPostIds(limit: number): Promise<number[]> {
   return Array.from(likedPostIds);
 }
 
+async function fetchAllSavedPostIds(limit: number): Promise<number[]> {
+  const savedPostIds = new Set<number>();
+  let currentPage = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await fetchMySavedPosts({
+      page: currentPage,
+      limit,
+    });
+
+    for (const post of response.data.posts) {
+      savedPostIds.add(post.id);
+    }
+
+    totalPages = response.data.pagination.totalPages;
+    currentPage += 1;
+  } while (currentPage <= totalPages);
+
+  return Array.from(savedPostIds);
+}
+
 async function fetchAllFollowingUserIds(limit: number): Promise<number[]> {
   const followingUserIds = new Set<number>();
   let currentPage = 1;
@@ -361,6 +440,19 @@ async function togglePostLike({
       method: liked ? "DELETE" : "POST",
     },
     liked ? "Failed to unlike post" : "Failed to like post"
+  );
+}
+
+async function togglePostSave({
+  postId,
+  saved,
+}: TogglePostSaveVariables): Promise<TogglePostSaveSuccessResponse> {
+  return requestApi<TogglePostSaveData>(
+    `/api/posts/${postId}/save`,
+    {
+      method: saved ? "DELETE" : "POST",
+    },
+    saved ? "Failed to unsave post" : "Failed to save post"
   );
 }
 
@@ -478,6 +570,15 @@ export function useMyLikedPostIdsQuery(limit = 50, enabled = true) {
   return useQuery({
     queryKey: postQueryKeys.likedPostIds(limit),
     queryFn: () => fetchAllLikedPostIds(limit),
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useMySavedPostIdsQuery(limit = 50, enabled = true) {
+  return useQuery({
+    queryKey: postQueryKeys.savedPostIds(limit),
+    queryFn: () => fetchAllSavedPostIds(limit),
     enabled,
     staleTime: 30_000,
   });
@@ -626,6 +727,116 @@ export function useTogglePostLikeMutation(
       });
       queryClient.invalidateQueries({
         queryKey: ["posts", "liked", "ids"],
+      });
+    },
+  });
+}
+
+export function useTogglePostSaveMutation(
+  options: ToggleSaveMutationOptions = {}
+) {
+  const { showToast = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    TogglePostSaveSuccessResponse,
+    unknown,
+    TogglePostSaveVariables,
+    TogglePostSaveContext
+  >({
+    mutationKey: ["posts", "toggle-save"],
+    mutationFn: togglePostSave,
+    onMutate: async (variables) => {
+      await Promise.all([
+        queryClient.cancelQueries({
+          queryKey: ["posts", "infinite"],
+        }),
+        queryClient.cancelQueries({
+          queryKey: ["posts", "saved", "ids"],
+        }),
+      ]);
+
+      const previousPostQueries =
+        queryClient.getQueriesData<PostsInfiniteData>({
+          queryKey: ["posts", "infinite"],
+        });
+      const previousSavedIdQueries = queryClient.getQueriesData<number[]>({
+        queryKey: ["posts", "saved", "ids"],
+      });
+
+      previousPostQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<PostsInfiniteData>(queryKey, (oldData) =>
+          updatePostInInfiniteFeed(oldData, variables.postId, (post) => ({
+            ...post,
+            savedByMe: !variables.saved,
+          }))
+        );
+      });
+
+      previousSavedIdQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<number[]>(queryKey, (oldData) =>
+          updateIdsArray(oldData, variables.postId, !variables.saved)
+        );
+      });
+
+      return {
+        previousPostQueries,
+        previousSavedIdQueries,
+      };
+    },
+    onError: (error, _variables, context) => {
+      context?.previousPostQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousSavedIdQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+
+      if (showToast) {
+        showErrorToast("Gagal memperbarui simpan post", {
+          description: getErrorMessage(
+            error,
+            "Terjadi kesalahan saat menyimpan postingan."
+          ),
+        });
+      }
+    },
+    onSuccess: (result, variables) => {
+      const nextSavedState = result.data.saved;
+
+      queryClient
+        .getQueriesData<PostsInfiniteData>({
+          queryKey: ["posts", "infinite"],
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<PostsInfiniteData>(queryKey, (oldData) =>
+            updatePostInInfiniteFeed(oldData, variables.postId, (post) => ({
+              ...post,
+              savedByMe: nextSavedState,
+            }))
+          );
+        });
+
+      queryClient
+        .getQueriesData<number[]>({
+          queryKey: ["posts", "saved", "ids"],
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<number[]>(queryKey, (oldData) =>
+            updateIdsArray(oldData, variables.postId, nextSavedState)
+          );
+        });
+
+      if (showToast) {
+        showSuccessToast(result.message);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["posts", "infinite"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["posts", "saved", "ids"],
       });
     },
   });

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 
 import {
+  IoBookmark,
   IoBookmarkOutline,
   IoChatbubbleOutline,
   IoClose,
@@ -31,7 +32,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
-import { useTogglePostLikeMutation } from "@/lib/tanstack/post-queries";
+import {
+  useTogglePostLikeMutation,
+  useTogglePostSaveMutation,
+} from "@/lib/tanstack/post-queries";
 import { cn } from "@/lib/utils";
 
 const EmojiPicker = dynamic(
@@ -44,6 +48,7 @@ export function PostCard({
   imageSrc,
   imageAlt = "Post image",
   liked = false,
+  saved = false,
   hasInitialComments = false,
   authorName = "Johndoe",
   authorAvatarUrl,
@@ -75,9 +80,13 @@ export function PostCard({
       : normalizedCaption;
   const avatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
   const togglePostLikeMutation = useTogglePostLikeMutation();
+  const togglePostSaveMutation = useTogglePostSaveMutation();
   const isLikePending =
     togglePostLikeMutation.isPending &&
     togglePostLikeMutation.variables?.postId === postId;
+  const isSavePending =
+    togglePostSaveMutation.isPending &&
+    togglePostSaveMutation.variables?.postId === postId;
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
@@ -91,6 +100,17 @@ export function PostCard({
     togglePostLikeMutation.mutate({
       postId,
       liked,
+    });
+  };
+
+  const handleToggleSave = () => {
+    if (isSavePending) {
+      return;
+    }
+
+    togglePostSaveMutation.mutate({
+      postId,
+      saved,
     });
   };
 
@@ -239,10 +259,16 @@ export function PostCard({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Save post"
+            aria-label={saved ? "Unsave post" : "Save post"}
+            onClick={handleToggleSave}
+            disabled={isSavePending}
             className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
           >
-            <IoBookmarkOutline className="size-6" />
+            {saved ? (
+              <IoBookmark className="size-6" />
+            ) : (
+              <IoBookmarkOutline className="size-6" />
+            )}
           </Button>
         </div>
 
@@ -534,10 +560,16 @@ export function PostCard({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label="Save post"
+                          aria-label={saved ? "Unsave post" : "Save post"}
+                          onClick={handleToggleSave}
+                          disabled={isSavePending}
                           className="size-6 rounded-none p-0 text-white"
                         >
-                          <IoBookmarkOutline className="size-6" />
+                          {saved ? (
+                            <IoBookmark className="size-6" />
+                          ) : (
+                            <IoBookmarkOutline className="size-6" />
+                          )}
                         </Button>
                       </div>
 

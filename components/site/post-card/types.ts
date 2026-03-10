@@ -3,6 +3,7 @@ export type PostCardProps = {
   imageSrc: string;
   imageAlt?: string;
   liked?: boolean;
+  saved?: boolean;
   hasInitialComments?: boolean;
   authorName?: string;
   authorAvatarUrl?: string | null;
