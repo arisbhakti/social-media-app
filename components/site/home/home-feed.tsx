@@ -6,7 +6,11 @@ import { PostCard } from "@/components/site/post-card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ApiError, usePostsInfiniteQuery } from "@/lib/tanstack/post-queries";
+import {
+  ApiError,
+  useMyLikedPostIdsQuery,
+  usePostsInfiniteQuery,
+} from "@/lib/tanstack/post-queries";
 
 function formatRelativeTime(isoDate: string) {
   const targetDate = new Date(isoDate);
@@ -89,10 +93,24 @@ export function HomeFeed() {
     isFetchingNextPage,
     refetch,
   } = usePostsInfiniteQuery(20);
+  const likedPostIdsQuery = useMyLikedPostIdsQuery(50);
+  const likedPostIdsSet = useMemo(
+    () => new Set(likedPostIdsQuery.data ?? []),
+    [likedPostIdsQuery.data],
+  );
+  const hasLikedPostSnapshot = Boolean(likedPostIdsQuery.data);
 
   const posts = useMemo(
-    () => data?.pages.flatMap((page) => page.data.posts) ?? [],
-    [data],
+    () =>
+      data?.pages.flatMap((page) =>
+        page.data.posts.map((post) => ({
+          ...post,
+          likedByMe: hasLikedPostSnapshot
+            ? likedPostIdsSet.has(post.id)
+            : post.likedByMe,
+        })),
+      ) ?? [],
+    [data, hasLikedPostSnapshot, likedPostIdsSet],
   );
 
   useEffect(() => {
@@ -184,6 +202,7 @@ export function HomeFeed() {
       {posts.map((post) => (
         <div key={post.id} className="grid gap-5">
           <PostCard
+            postId={post.id}
             imageSrc={post.imageUrl}
             imageAlt={post.caption || `Post by ${post.author.username}`}
             liked={post.likedByMe}

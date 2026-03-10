@@ -1,4 +1,5 @@
 export type PostCardProps = {
+  postId: number;
   imageSrc: string;
   imageAlt?: string;
   liked?: boolean;
@@ -9,13 +10,6 @@ export type PostCardProps = {
   createdAtLabel?: string;
   likeCount?: number;
   commentCount?: number;
-};
-
-export type LikeUser = {
-  id: number;
-  name: string;
-  username: string;
-  following: boolean;
 };
 
 export type CommentItem = {

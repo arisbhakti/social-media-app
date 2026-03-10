@@ -1,13 +1,4 @@
-import type { CommentItem, LikeUser } from "@/components/site/post-card/types";
-
-export const LIKED_BY_USERS: LikeUser[] = [
-  { id: 1, name: "John Doe", username: "johndoe", following: true },
-  { id: 2, name: "John Doe", username: "johndoe", following: true },
-  { id: 3, name: "John Doe", username: "johndoe", following: false },
-  { id: 4, name: "John Doe", username: "johndoe", following: false },
-  { id: 5, name: "John Doe", username: "johndoe", following: false },
-  { id: 6, name: "John Doe", username: "johndoe", following: false },
-];
+import type { CommentItem } from "@/components/site/post-card/types";
 
 export const DEFAULT_COMMENTS: CommentItem[] = [
   {

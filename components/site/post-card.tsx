@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { useTogglePostLikeMutation } from "@/lib/tanstack/post-queries";
 import { cn } from "@/lib/utils";
 
 const EmojiPicker = dynamic(
@@ -39,6 +40,7 @@ const EmojiPicker = dynamic(
 );
 
 export function PostCard({
+  postId,
   imageSrc,
   imageAlt = "Post image",
   liked = false,
@@ -72,9 +74,24 @@ export function PostCard({
       ? `${normalizedCaption.slice(0, 140)}...`
       : normalizedCaption;
   const avatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
+  const togglePostLikeMutation = useTogglePostLikeMutation();
+  const isLikePending =
+    togglePostLikeMutation.isPending &&
+    togglePostLikeMutation.variables?.postId === postId;
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
+  };
+
+  const handleToggleLike = () => {
+    if (isLikePending) {
+      return;
+    }
+
+    togglePostLikeMutation.mutate({
+      postId,
+      liked,
+    });
   };
 
   const handleCommentsOpenChange = (open: boolean) => {
@@ -180,18 +197,32 @@ export function PostCard({
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-4">
-            <ActionButton
-              label="Open likes list"
-              count={likeCount}
-              onClick={() => setIsLikesOpen(true)}
-              icon={
-                liked ? (
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={liked ? "Unlike post" : "Like post"}
+                onClick={handleToggleLike}
+                disabled={isLikePending}
+                className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] disabled:opacity-70"
+              >
+                {liked ? (
                   <IoHeart className="size-6 text-red" />
                 ) : (
                   <IoHeartOutline className="size-6" />
-                )
-              }
-            />
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                aria-label="Open likes list"
+                onClick={() => setIsLikesOpen(true)}
+                className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:text-md"
+              >
+                {likeCount}
+              </Button>
+            </div>
             <ActionButton
               label="Open comments"
               count={commentCount}
@@ -247,7 +278,7 @@ export function PostCard({
                 <IoClose className="size-6" />
               </Button>
 
-              <LikesList />
+              <LikesList postId={postId} />
             </div>
           </DrawerContent>
         </Drawer>
@@ -268,7 +299,7 @@ export function PostCard({
               >
                 <IoClose className="size-6" />
               </Button>
-              <LikesList />
+              <LikesList postId={postId} />
             </div>
           </DialogContent>
         </Dialog>
@@ -461,17 +492,32 @@ export function PostCard({
                     <div className="mt-4 border-t border-t-neutral-900 pt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <ModalActionStat
-                            label="Total likes"
-                            count={likeCount}
-                            icon={
-                              liked ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={liked ? "Unlike post" : "Like post"}
+                              onClick={handleToggleLike}
+                              disabled={isLikePending}
+                              className="size-6 rounded-none p-0 text-white hover:bg-transparent disabled:opacity-70"
+                            >
+                              {liked ? (
                                 <IoHeart className="size-6 text-red" />
                               ) : (
                                 <IoHeartOutline className="size-6" />
-                              )
-                            }
-                          />
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              aria-label="Open likes list"
+                              onClick={() => setIsLikesOpen(true)}
+                              className="h-auto rounded-none p-0 text-md font-semibold text-white hover:bg-transparent hover:text-white"
+                            >
+                              {likeCount}
+                            </Button>
+                          </div>
                           <ModalActionStat
                             label="Total comments"
                             count={commentCount}
