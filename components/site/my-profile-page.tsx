@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IoBookmarkOutline, IoClose, IoPaperPlaneOutline } from "react-icons/io5";
 
 import { HomeBottomNav } from "@/components/site/home-bottom-nav";
+import { PostCard } from "@/components/site/post-card";
 import { FollowUserButton } from "@/components/site/post-card/follow-user-button";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,6 +36,15 @@ type ProfileGridPost = {
   imageUrl: string;
   caption: string;
   createdAt: string;
+  author?: {
+    username: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  likedByMe?: boolean;
+  savedByMe?: boolean;
+  likeCount?: number;
+  commentCount?: number;
 };
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
@@ -48,6 +57,46 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
   }
 
   return fallbackMessage;
+}
+
+function formatRelativeTime(isoDate: string) {
+  const targetDate = new Date(isoDate);
+  if (Number.isNaN(targetDate.getTime())) {
+    return "Just now";
+  }
+
+  const secondsDiff = Math.round((targetDate.getTime() - Date.now()) / 1000);
+  const absoluteSeconds = Math.abs(secondsDiff);
+  const formatter = new Intl.RelativeTimeFormat("en", {
+    numeric: "auto",
+  });
+
+  if (absoluteSeconds < 60) {
+    return formatter.format(secondsDiff, "second");
+  }
+
+  const minutesDiff = Math.round(secondsDiff / 60);
+  if (Math.abs(minutesDiff) < 60) {
+    return formatter.format(minutesDiff, "minute");
+  }
+
+  const hoursDiff = Math.round(minutesDiff / 60);
+  if (Math.abs(hoursDiff) < 24) {
+    return formatter.format(hoursDiff, "hour");
+  }
+
+  const daysDiff = Math.round(hoursDiff / 24);
+  if (Math.abs(daysDiff) < 30) {
+    return formatter.format(daysDiff, "day");
+  }
+
+  const monthsDiff = Math.round(daysDiff / 30);
+  if (Math.abs(monthsDiff) < 12) {
+    return formatter.format(monthsDiff, "month");
+  }
+
+  const yearsDiff = Math.round(monthsDiff / 12);
+  return formatter.format(yearsDiff, "year");
 }
 
 function ProfileHeaderSkeleton() {
@@ -434,6 +483,11 @@ export function MyProfilePage() {
           imageUrl: item.imageUrl,
           caption: item.caption,
           createdAt: item.createdAt,
+          author: item.author,
+          likedByMe: item.likedByMe,
+          savedByMe: item.savedByMe,
+          likeCount: item.likeCount,
+          commentCount: item.commentCount,
         }))
       ) ?? [],
     [galleryPostsQuery.data]
@@ -754,19 +808,22 @@ export function MyProfilePage() {
         ) : (
           <div className="mt-4 grid grid-cols-3 gap-0.5 md:mt-6 md:gap-1">
             {activePosts.map((post) => (
-              <div
+              <PostCard
                 key={post.id}
-                className="relative aspect-square overflow-hidden"
-                title={post.caption}
-              >
-                <Image
-                  src={post.imageUrl}
-                  alt={post.caption || "My post image"}
-                  width={500}
-                  height={500}
-                  className="h-full w-full object-cover rounded-[2.67px] md:rounded-[6px]"
-                />
-              </div>
+                postId={post.id}
+                imageSrc={post.imageUrl}
+                imageAlt={post.caption || "My post image"}
+                liked={Boolean(post.likedByMe)}
+                saved={activeTab === "saved" ? true : Boolean(post.savedByMe)}
+                authorName={post.author?.name || profile?.name || "Unknown"}
+                authorUsername={post.author?.username || profile?.username || ""}
+                authorAvatarUrl={post.author?.avatarUrl ?? profile?.avatarUrl ?? null}
+                caption={post.caption}
+                createdAtLabel={formatRelativeTime(post.createdAt)}
+                likeCount={post.likeCount ?? 0}
+                commentCount={post.commentCount ?? 0}
+                thumbnailOnly
+              />
             ))}
           </div>
         )}

@@ -11,6 +11,8 @@ export type PostCardProps = {
   createdAtLabel?: string;
   likeCount?: number;
   commentCount?: number;
+  thumbnailOnly?: boolean;
+  thumbnailClassName?: string;
 };
 
 export type CommentItem = {

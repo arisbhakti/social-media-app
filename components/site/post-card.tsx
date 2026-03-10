@@ -161,6 +161,8 @@ export function PostCard({
   createdAtLabel = "Just now",
   likeCount = 0,
   commentCount = 0,
+  thumbnailOnly = false,
+  thumbnailClassName,
 }: PostCardProps) {
   const [isLikesOpen, setIsLikesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -361,125 +363,140 @@ export function PostCard({
       ))}
     </div>
   );
+  const postPreviewTrigger = (
+    <button
+      type="button"
+      onClick={handleOpenComments}
+      className={cn(
+        "w-full overflow-hidden transition-opacity hover:opacity-95",
+        thumbnailOnly
+          ? `relative aspect-square rounded-[2.67px] md:rounded-[6px] ${thumbnailClassName ?? ""}`
+          : "rounded-xl",
+      )}
+      aria-label={thumbnailOnly ? "Open post detail" : "Open comments"}
+    >
+      <Image
+        src={imageSrc}
+        alt={imageAlt}
+        width={1000}
+        height={1000}
+        className={cn(
+          "aspect-square w-full object-cover",
+          thumbnailOnly ? "h-full rounded-[2.67px] md:rounded-[6px]" : "md:h-150",
+        )}
+      />
+    </button>
+  );
 
   return (
     <>
-      <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-white shadow-none">
-        <div className="flex items-center gap-2 md:gap-3">
-          <button
-            type="button"
-            onClick={() => handleOpenAuthorProfile(authorUsername)}
-            className="flex items-center gap-2 text-left transition-opacity hover:opacity-90 md:gap-3"
-          >
-            <Avatar className="size-11 border border-[rgba(126,145,183,0.32)] md:size-16">
-              <AvatarImage
-                src={authorAvatarUrl ?? "/dummy-profile-image.png"}
-                alt={authorName}
-              />
-              <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
-            </Avatar>
-            <div className="grid gap-0">
-              <span className="text-sm font-bold md:text-md">{authorName}</span>
-              <span className="text-xs text-neutral-400 md:text-sm">
-                {createdAtLabel}
-              </span>
-            </div>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleOpenComments}
-          className="w-full overflow-hidden rounded-xl transition-opacity hover:opacity-95"
-          aria-label="Open comments"
-        >
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            width={1000}
-            height={1000}
-            className="md:h-150 aspect-square w-full object-cover"
-          />
-        </button>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-4">
-            <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={liked ? "Unlike post" : "Like post"}
-                onClick={() => handleToggleLike(liked)}
-                disabled={isLikePending}
-                className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] disabled:opacity-70"
-              >
-                {liked ? (
-                  <IoHeart className="size-6 text-red" />
-                ) : (
-                  <IoHeartOutline className="size-6" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                aria-label="Open likes list"
-                onClick={() => setIsLikesOpen(true)}
-                className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:text-md"
-              >
-                {modalLikeCount}
-              </Button>
-            </div>
-            <ActionButton
-              label="Open comments"
-              count={commentsTotalCount}
-              onClick={handleOpenComments}
-              icon={<IoChatbubbleOutline className="size-6" />}
-            />
-            <ActionButton
-              label="Share post"
-              count={0}
-              icon={<IoPaperPlaneOutline className="size-6" />}
-            />
+      {thumbnailOnly ? (
+        postPreviewTrigger
+      ) : (
+        <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-white shadow-none">
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              type="button"
+              onClick={() => handleOpenAuthorProfile(authorUsername)}
+              className="flex items-center gap-2 text-left transition-opacity hover:opacity-90 md:gap-3"
+            >
+              <Avatar className="size-11 border border-[rgba(126,145,183,0.32)] md:size-16">
+                <AvatarImage
+                  src={authorAvatarUrl ?? "/dummy-profile-image.png"}
+                  alt={authorName}
+                />
+                <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
+              </Avatar>
+              <div className="grid gap-0">
+                <span className="text-sm font-bold md:text-md">{authorName}</span>
+                <span className="text-xs text-neutral-400 md:text-sm">
+                  {createdAtLabel}
+                </span>
+              </div>
+            </button>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={saved ? "Unsave post" : "Save post"}
-            onClick={() => handleToggleSave(saved)}
-            disabled={isSavePending}
-            className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
-          >
-            {saved ? (
-              <IoBookmark className="size-6" />
-            ) : (
-              <IoBookmarkOutline className="size-6" />
-            )}
-          </Button>
-        </div>
 
-        <div className="grid gap-0 md:gap-1">
-          <button
-            type="button"
-            onClick={() => handleOpenAuthorProfile(authorUsername)}
-            className="w-fit text-left text-sm font-bold transition-opacity hover:opacity-90 md:text-md"
-          >
-            {authorName}
-          </button>
-          <p className="text-sm md:text-md text-neutral-25">{visibleCaption}</p>
-          {hasLongCaption ? (
+          {postPreviewTrigger}
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={liked ? "Unlike post" : "Like post"}
+                  onClick={() => handleToggleLike(liked)}
+                  disabled={isLikePending}
+                  className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] disabled:opacity-70"
+                >
+                  {liked ? (
+                    <IoHeart className="size-6 text-red" />
+                  ) : (
+                    <IoHeartOutline className="size-6" />
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label="Open likes list"
+                  onClick={() => setIsLikesOpen(true)}
+                  className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:text-md"
+                >
+                  {modalLikeCount}
+                </Button>
+              </div>
+              <ActionButton
+                label="Open comments"
+                count={commentsTotalCount}
+                onClick={handleOpenComments}
+                icon={<IoChatbubbleOutline className="size-6" />}
+              />
+              <ActionButton
+                label="Share post"
+                count={0}
+                icon={<IoPaperPlaneOutline className="size-6" />}
+              />
+            </div>
             <Button
               type="button"
-              variant="link"
-              onClick={() => setIsCaptionExpanded((value) => !value)}
-              className="h-auto w-fit p-0 text-sm md:text-md font-bold text-primary-200"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={saved ? "Unsave post" : "Save post"}
+              onClick={() => handleToggleSave(saved)}
+              disabled={isSavePending}
+              className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
             >
-              {isCaptionExpanded ? "Show Less" : "Show More"}
+              {saved ? (
+                <IoBookmark className="size-6" />
+              ) : (
+                <IoBookmarkOutline className="size-6" />
+              )}
             </Button>
-          ) : null}
-        </div>
-      </Card>
+          </div>
+
+          <div className="grid gap-0 md:gap-1">
+            <button
+              type="button"
+              onClick={() => handleOpenAuthorProfile(authorUsername)}
+              className="w-fit text-left text-sm font-bold transition-opacity hover:opacity-90 md:text-md"
+            >
+              {authorName}
+            </button>
+            <p className="text-sm md:text-md text-neutral-25">{visibleCaption}</p>
+            {hasLongCaption ? (
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsCaptionExpanded((value) => !value)}
+                className="h-auto w-fit p-0 text-sm md:text-md font-bold text-primary-200"
+              >
+                {isCaptionExpanded ? "Show Less" : "Show More"}
+              </Button>
+            ) : null}
+          </div>
+        </Card>
+      )}
 
       {isMobile ? (
         <Drawer open={isLikesOpen} onOpenChange={setIsLikesOpen}>

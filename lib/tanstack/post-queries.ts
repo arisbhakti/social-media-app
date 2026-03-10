@@ -189,10 +189,12 @@ export type FollowUserItem = {
   isFollowedByMe: boolean;
 };
 
-type MyFollowingData = {
+type FollowUsersData = {
   users: FollowUserItem[];
   pagination: PostsPagination;
 };
+
+type MyFollowingData = FollowUsersData;
 
 export type MyFollowingSuccessResponse = {
   success: true;
@@ -200,15 +202,36 @@ export type MyFollowingSuccessResponse = {
   data: MyFollowingData;
 };
 
-type MyFollowersData = {
-  users: FollowUserItem[];
-  pagination: PostsPagination;
-};
+type MyFollowersData = FollowUsersData;
 
 export type MyFollowersSuccessResponse = {
   success: true;
   message: string;
   data: MyFollowersData;
+};
+
+type UserFollowingData = FollowUsersData;
+
+export type UserFollowingSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserFollowingData;
+};
+
+type UserFollowersData = FollowUsersData;
+
+export type UserFollowersSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserFollowersData;
+};
+
+type UserSearchData = FollowUsersData;
+
+export type UserSearchSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserSearchData;
 };
 
 export type PostLikeUser = {
@@ -368,6 +391,9 @@ type ToggleFollowContext = {
   previousUserProfileQueries: Array<[QueryKey, UserProfileSuccessResponse | undefined]>;
   previousFollowingQueries: Array<[QueryKey, MyFollowingInfiniteData | undefined]>;
   previousFollowersQueries: Array<[QueryKey, MyFollowersInfiniteData | undefined]>;
+  previousUsersConnectionsQueries: Array<
+    [QueryKey, UsersConnectionsInfiniteData | undefined]
+  >;
 };
 
 type ToggleLikeMutationOptions = {
@@ -416,6 +442,12 @@ export const postQueryKeys = {
     ["users", username.trim(), "posts", "infinite", limit] as const,
   userLikesInfinite: (username: string, limit = 9) =>
     ["users", username.trim(), "likes", "infinite", limit] as const,
+  userFollowingInfinite: (username: string, limit = 10) =>
+    ["users", username.trim(), "following", "infinite", limit] as const,
+  userFollowersInfinite: (username: string, limit = 10) =>
+    ["users", username.trim(), "followers", "infinite", limit] as const,
+  userSearchInfinite: (query: string, limit = 20) =>
+    ["users", "search", query.trim(), "infinite", limit] as const,
   myFollowingInfinite: (limit = 10) =>
     ["me", "following", "infinite", limit] as const,
   myFollowersInfinite: (limit = 10) =>
@@ -432,9 +464,15 @@ export const postQueryKeys = {
 type PostsInfiniteData = InfiniteData<PostsSuccessResponse, number>;
 type MyFollowingInfiniteData = InfiniteData<MyFollowingSuccessResponse, number>;
 type MyFollowersInfiniteData = InfiniteData<MyFollowersSuccessResponse, number>;
+type UsersConnectionsInfiniteData = InfiniteData<
+  {
+    success: true;
+    message: string;
+    data: FollowUsersData;
+  },
+  number
+>;
 type PostLikesInfiniteData = InfiniteData<PostLikesSuccessResponse, number>;
-type UserPostsInfiniteData = InfiniteData<UserPostsSuccessResponse, number>;
-type UserLikesInfiniteData = InfiniteData<UserLikedPostsSuccessResponse, number>;
 
 export class ApiError extends Error {
   status: number;
@@ -665,6 +703,59 @@ async function fetchMyFollowers({
       method: "GET",
     },
     "Failed to fetch followers"
+  );
+}
+
+async function fetchUserFollowing({
+  username,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  username: string;
+}): Promise<UserFollowingSuccessResponse> {
+  return requestApi<UserFollowingData>(
+    `/api/users/${encodeURIComponent(username)}/following?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch user following"
+  );
+}
+
+async function fetchUserFollowers({
+  username,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  username: string;
+}): Promise<UserFollowersSuccessResponse> {
+  return requestApi<UserFollowersData>(
+    `/api/users/${encodeURIComponent(username)}/followers?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch user followers"
+  );
+}
+
+async function fetchUserSearch({
+  query,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  query: string;
+}): Promise<UserSearchSuccessResponse> {
+  return requestApi<UserSearchData>(
+    `/api/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to search users",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -1124,6 +1215,22 @@ function getFeedLimitFromQueryKey(queryKey: QueryKey, fallback = 20) {
   return limit;
 }
 
+function isUsersConnectionInfiniteQueryKey(queryKey: QueryKey) {
+  if (!Array.isArray(queryKey) || queryKey[0] !== "users") {
+    return false;
+  }
+
+  if (!queryKey.includes("infinite")) {
+    return false;
+  }
+
+  return (
+    queryKey[1] === "search" ||
+    queryKey.includes("followers") ||
+    queryKey.includes("following")
+  );
+}
+
 function createSeededFeedData(
   post: PostItem,
   message: string,
@@ -1282,6 +1389,90 @@ export function useUserLikedPostsInfiniteQuery(
       return page + 1;
     },
     enabled: enabled && normalizedUsername.length > 0,
+  });
+}
+
+export function useUserFollowingInfiniteQuery(
+  username: string,
+  limit = 10,
+  enabled = true
+) {
+  const normalizedUsername = username.trim();
+
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.userFollowingInfinite(normalizedUsername, limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchUserFollowing({
+        username: normalizedUsername,
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled: enabled && normalizedUsername.length > 0,
+  });
+}
+
+export function useUserFollowersInfiniteQuery(
+  username: string,
+  limit = 10,
+  enabled = true
+) {
+  const normalizedUsername = username.trim();
+
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.userFollowersInfinite(normalizedUsername, limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchUserFollowers({
+        username: normalizedUsername,
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled: enabled && normalizedUsername.length > 0,
+  });
+}
+
+export function useUserSearchInfiniteQuery(
+  query: string,
+  limit = 20,
+  enabled = true
+) {
+  const normalizedQuery = query.trim();
+
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.userSearchInfinite(normalizedQuery, limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchUserSearch({
+        query: normalizedQuery,
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled: enabled && normalizedQuery.length > 0,
   });
 }
 
@@ -1845,6 +2036,10 @@ export function useToggleFollowMutation(
         queryClient.cancelQueries({
           queryKey: ["me", "followers", "infinite"],
         }),
+        queryClient.cancelQueries({
+          predicate: (query) =>
+            isUsersConnectionInfiniteQueryKey(query.queryKey),
+        }),
       ];
 
       if (hasValidPostId) {
@@ -1881,6 +2076,11 @@ export function useToggleFollowMutation(
         queryClient.getQueriesData<MyFollowersInfiniteData>({
           queryKey: ["me", "followers", "infinite"],
         });
+      const previousUsersConnectionsQueries = queryClient
+        .getQueriesData<UsersConnectionsInfiniteData>({
+          queryKey: ["users"],
+        })
+        .filter(([queryKey]) => isUsersConnectionInfiniteQueryKey(queryKey));
 
       if (hasValidPostId) {
         previousPostLikesQueries.forEach(([queryKey]) => {
@@ -1946,6 +2146,15 @@ export function useToggleFollowMutation(
         );
       });
 
+      previousUsersConnectionsQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<UsersConnectionsInfiniteData>(queryKey, (oldData) =>
+          updateUsersInInfiniteData(oldData, variables.userId, (user) => ({
+            ...user,
+            isFollowedByMe: optimisticFollowingState,
+          }))
+        );
+      });
+
       return {
         hasValidPostId,
         optimisticFollowingDelta,
@@ -1956,6 +2165,7 @@ export function useToggleFollowMutation(
         previousUserProfileQueries,
         previousFollowingQueries,
         previousFollowersQueries,
+        previousUsersConnectionsQueries,
       };
     },
     onError: (error, _variables, context) => {
@@ -1975,6 +2185,9 @@ export function useToggleFollowMutation(
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousFollowersQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousUsersConnectionsQueries.forEach(([queryKey, oldData]) => {
         queryClient.setQueryData(queryKey, oldData);
       });
 
@@ -2054,6 +2267,20 @@ export function useToggleFollowMutation(
           );
         });
 
+      queryClient
+        .getQueriesData<UsersConnectionsInfiniteData>({
+          queryKey: ["users"],
+        })
+        .filter(([queryKey]) => isUsersConnectionInfiniteQueryKey(queryKey))
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<UsersConnectionsInfiniteData>(queryKey, (oldData) =>
+            updateUsersInInfiniteData(oldData, variables.userId, (user) => ({
+              ...user,
+              isFollowedByMe: isNowFollowing,
+            }))
+          );
+        });
+
       const actualFollowingDelta =
         variables.following === isNowFollowing ? 0 : isNowFollowing ? 1 : -1;
       const correctionDelta =
@@ -2116,6 +2343,10 @@ export function useToggleFollowMutation(
       });
       queryClient.invalidateQueries({
         queryKey: ["me", "followers", "infinite"],
+      });
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          isUsersConnectionInfiniteQueryKey(query.queryKey),
       });
     },
   });
