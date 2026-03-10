@@ -108,7 +108,7 @@ export function ProfilePage({ username }: ProfilePageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTab>("gallery");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedUsername = username.trim();
   const profileQuery = useUserProfileQuery(normalizedUsername, true);
   const galleryPostsQuery = useUserPostsInfiniteQuery(
     normalizedUsername,

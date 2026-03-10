@@ -151,6 +151,10 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
   return fallbackMessage;
 }
 
+function isUnauthorizedError(error: unknown) {
+  return error instanceof ApiError && (error.status === 401 || error.status === 403);
+}
+
 function validateAvatar(file: File | null) {
   if (!file) {
     return null;
@@ -167,13 +171,18 @@ function validateAvatar(file: File | null) {
   return null;
 }
 
-async function getMyProfile(token: string) {
+async function getMyProfile(token: string | null) {
+  const headers: HeadersInit = {
+    accept: "*/*",
+  };
+
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch("/api/me", {
     method: "GET",
-    headers: {
-      accept: "*/*",
-      authorization: `Bearer ${token}`,
-    },
+    headers,
     cache: "no-store",
   });
 
@@ -185,13 +194,18 @@ async function getMyProfile(token: string) {
   return body.data.profile;
 }
 
-async function updateMyProfile(token: string, formData: FormData) {
+async function updateMyProfile(token: string | null, formData: FormData) {
+  const headers: HeadersInit = {
+    accept: "*/*",
+  };
+
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch("/api/me", {
     method: "PATCH",
-    headers: {
-      accept: "*/*",
-      authorization: `Bearer ${token}`,
-    },
+    headers,
     body: formData,
     cache: "no-store",
   });
@@ -234,17 +248,12 @@ export default function EditProfilePage() {
     let isCancelled = false;
 
     const loadProfile = async () => {
-      const session = getAuthSession();
-      if (!session?.token) {
-        showErrorToast("Unauthorized");
-        router.push("/login");
-        return;
-      }
+      const token = getAuthSession()?.token ?? null;
 
       setIsLoadingProfile(true);
 
       try {
-        const profile = await getMyProfile(session.token);
+        const profile = await getMyProfile(token);
         if (isCancelled) {
           return;
         }
@@ -259,6 +268,12 @@ export default function EditProfilePage() {
         setAvatarUrl(profile.avatarUrl);
       } catch (error) {
         if (!isCancelled) {
+          if (isUnauthorizedError(error)) {
+            showErrorToast("Unauthorized");
+            router.push("/login");
+            return;
+          }
+
           showErrorToast(getErrorMessage(error, "Failed to fetch profile"));
         }
       } finally {
@@ -324,12 +339,7 @@ export default function EditProfilePage() {
       return;
     }
 
-    const session = getAuthSession();
-    if (!session?.token) {
-      showErrorToast("Unauthorized");
-      router.push("/login");
-      return;
-    }
+    const token = getAuthSession()?.token ?? null;
 
     const name = formData.name.trim();
     const username = formData.username.trim();
@@ -358,24 +368,32 @@ export default function EditProfilePage() {
     setIsSaving(true);
 
     try {
-      const response = await updateMyProfile(session.token, payload);
+      const response = await updateMyProfile(token, payload);
       const { profile } = response;
 
       setAvatarUrl(profile.avatarUrl ?? null);
 
-      saveAuthSession(session.token, {
-        id: profile.id,
-        name: profile.name,
-        username: profile.username,
-        email: profile.email,
-        phone: profile.phone,
-        avatarUrl: profile.avatarUrl,
-      });
-      window.dispatchEvent(new Event("storage"));
+      if (token) {
+        saveAuthSession(token, {
+          id: profile.id,
+          name: profile.name,
+          username: profile.username,
+          email: profile.email,
+          phone: profile.phone,
+          avatarUrl: profile.avatarUrl,
+        });
+        window.dispatchEvent(new Event("storage"));
+      }
 
       showSuccessToast(response.message);
       router.push("/myprofile");
     } catch (error) {
+      if (isUnauthorizedError(error)) {
+        showErrorToast("Unauthorized");
+        router.push("/login");
+        return;
+      }
+
       showErrorToast(getErrorMessage(error, "Failed to update profile"));
     } finally {
       setIsSaving(false);

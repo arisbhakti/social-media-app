@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PostCard } from "@/components/site/post-card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { getAuthSession } from "@/lib/auth-session";
 import {
   ApiError,
   useMySavedPostIdsQuery,
@@ -84,6 +85,7 @@ function PostCardSkeleton() {
 
 export function HomeFeed() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const {
     data,
     error,
@@ -93,7 +95,21 @@ export function HomeFeed() {
     isFetchingNextPage,
     refetch,
   } = usePostsInfiniteQuery(20);
-  const savedPostIdsQuery = useMySavedPostIdsQuery(50);
+
+  useEffect(() => {
+    const syncAuthSession = () => {
+      setIsLoggedIn(Boolean(getAuthSession()?.token));
+    };
+
+    syncAuthSession();
+    window.addEventListener("storage", syncAuthSession);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthSession);
+    };
+  }, []);
+
+  const savedPostIdsQuery = useMySavedPostIdsQuery(50, isLoggedIn);
   const savedPostIdsSet = useMemo(
     () => new Set(savedPostIdsQuery.data ?? []),
     [savedPostIdsQuery.data],

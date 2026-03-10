@@ -69,23 +69,24 @@ export async function GET(request: Request) {
   }
 
   const authorization = request.headers.get("authorization");
-  if (!authorization) {
-    return toApiError("Unauthorized", 401);
-  }
-
   const { searchParams } = new URL(request.url);
   const page = toPositiveInt(searchParams.get("page"), 1);
   const limit = toPositiveInt(searchParams.get("limit"), 20);
 
   try {
+    const headers: HeadersInit = {
+      accept: "*/*",
+    };
+
+    if (authorization) {
+      headers.authorization = authorization;
+    }
+
     const response = await fetch(
       `${baseApiUrl}/api/posts?page=${page}&limit=${limit}`,
       {
         method: "GET",
-        headers: {
-          accept: "*/*",
-          authorization,
-        },
+        headers,
         cache: "no-store",
       }
     );

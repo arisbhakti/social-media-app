@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-query";
 
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
-import { getAuthSession } from "@/lib/auth-session";
+import { clearAuthSession, getAuthSession } from "@/lib/auth-session";
 
 type ApiResponse<TData> = {
   success: boolean;
@@ -396,20 +396,26 @@ type RequestApiInit = RequestInit & {
   cache?: RequestCache;
 };
 
+type RequestApiOptions = {
+  includeAuthWhenAvailable?: boolean;
+  redirectOnUnauthorized?: boolean;
+  requireAuth?: boolean;
+};
+
 export const postQueryKeys = {
   feedInfinite: (limit = 20) => ["posts", "infinite", limit] as const,
   likedPostIds: (limit = 50) => ["posts", "liked", "ids", limit] as const,
   savedPostIds: (limit = 50) => ["posts", "saved", "ids", limit] as const,
   meProfile: () => ["me", "profile"] as const,
   userProfile: (username: string) =>
-    ["users", username.trim().toLowerCase(), "profile"] as const,
+    ["users", username.trim(), "profile"] as const,
   myPostsInfinite: (limit = 9) => ["me", "posts", "infinite", limit] as const,
   mySavedPostsInfinite: (limit = 9) =>
     ["me", "saved", "infinite", limit] as const,
   userPostsInfinite: (username: string, limit = 9) =>
-    ["users", username.trim().toLowerCase(), "posts", "infinite", limit] as const,
+    ["users", username.trim(), "posts", "infinite", limit] as const,
   userLikesInfinite: (username: string, limit = 9) =>
-    ["users", username.trim().toLowerCase(), "likes", "infinite", limit] as const,
+    ["users", username.trim(), "likes", "infinite", limit] as const,
   myFollowingInfinite: (limit = 10) =>
     ["me", "following", "infinite", limit] as const,
   myFollowersInfinite: (limit = 10) =>
@@ -456,28 +462,54 @@ async function parseApiBody<T>(response: Response): Promise<T | null> {
   }
 }
 
-function getSessionToken() {
-  const session = getAuthSession();
-  if (!session?.token) {
-    throw new ApiError("Unauthorized", 401);
+const AUTH_REDIRECT_STATUSES = new Set([401, 403]);
+let hasTriggeredAuthRedirect = false;
+
+function redirectToLoginIfUnauthorized(status: number) {
+  if (!AUTH_REDIRECT_STATUSES.has(status) || typeof window === "undefined") {
+    return;
   }
 
-  return session.token;
+  if (window.location.pathname === "/login" || hasTriggeredAuthRedirect) {
+    return;
+  }
+
+  hasTriggeredAuthRedirect = true;
+  clearAuthSession();
+  window.location.assign("/login");
 }
 
 async function requestApi<TData>(
   endpoint: string,
   init: RequestApiInit,
-  fallbackMessage: string
+  fallbackMessage: string,
+  options: RequestApiOptions = {}
 ): Promise<{
   success: true;
   message: string;
   data: TData;
 }> {
-  const token = getSessionToken();
+  const {
+    includeAuthWhenAvailable = true,
+    redirectOnUnauthorized = true,
+    requireAuth = true,
+  } = options;
+  const token = getAuthSession()?.token ?? null;
+
+  if (requireAuth && !token) {
+    if (redirectOnUnauthorized) {
+      redirectToLoginIfUnauthorized(401);
+    }
+
+    throw new ApiError("Unauthorized", 401);
+  }
+
   const headers = new Headers(init.headers);
   headers.set("accept", "*/*");
-  headers.set("authorization", `Bearer ${token}`);
+
+  if (includeAuthWhenAvailable && token) {
+    headers.set("authorization", `Bearer ${token}`);
+  }
 
   const response = await fetch(endpoint, {
     ...init,
@@ -487,6 +519,10 @@ async function requestApi<TData>(
 
   const body = await parseApiBody<ApiResponse<TData>>(response);
   if (!response.ok || !body?.success || !body.data) {
+    if (redirectOnUnauthorized) {
+      redirectToLoginIfUnauthorized(response.status);
+    }
+
     throw buildApiError(response.status, fallbackMessage, body);
   }
 
@@ -506,7 +542,10 @@ async function fetchPosts({
     {
       method: "GET",
     },
-    "Failed to fetch posts"
+    "Failed to fetch posts",
+    {
+      requireAuth: false,
+    }
   );
 }
 
@@ -1139,7 +1178,7 @@ export function useMyProfileQuery(enabled = true) {
 }
 
 export function useUserProfileQuery(username: string, enabled = true) {
-  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedUsername = username.trim();
 
   return useQuery({
     queryKey: postQueryKeys.userProfile(normalizedUsername),
@@ -1195,7 +1234,7 @@ export function useUserPostsInfiniteQuery(
   limit = 9,
   enabled = true
 ) {
-  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedUsername = username.trim();
 
   return useInfiniteQuery({
     queryKey: postQueryKeys.userPostsInfinite(normalizedUsername, limit),
@@ -1223,7 +1262,7 @@ export function useUserLikedPostsInfiniteQuery(
   limit = 9,
   enabled = true
 ) {
-  const normalizedUsername = username.trim().toLowerCase();
+  const normalizedUsername = username.trim();
 
   return useInfiniteQuery({
     queryKey: postQueryKeys.userLikesInfinite(normalizedUsername, limit),
