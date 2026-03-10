@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   ApiError,
-  useMyLikedPostIdsQuery,
   useMySavedPostIdsQuery,
   usePostsInfiniteQuery,
 } from "@/lib/tanstack/post-queries";
@@ -94,17 +93,11 @@ export function HomeFeed() {
     isFetchingNextPage,
     refetch,
   } = usePostsInfiniteQuery(20);
-  const likedPostIdsQuery = useMyLikedPostIdsQuery(50);
   const savedPostIdsQuery = useMySavedPostIdsQuery(50);
-  const likedPostIdsSet = useMemo(
-    () => new Set(likedPostIdsQuery.data ?? []),
-    [likedPostIdsQuery.data],
-  );
   const savedPostIdsSet = useMemo(
     () => new Set(savedPostIdsQuery.data ?? []),
     [savedPostIdsQuery.data],
   );
-  const hasLikedPostSnapshot = Boolean(likedPostIdsQuery.data);
   const hasSavedPostSnapshot = Boolean(savedPostIdsQuery.data);
 
   const posts = useMemo(
@@ -112,15 +105,12 @@ export function HomeFeed() {
       data?.pages.flatMap((page) =>
         page.data.posts.map((post) => ({
           ...post,
-          likedByMe: hasLikedPostSnapshot
-            ? likedPostIdsSet.has(post.id)
-            : post.likedByMe,
           savedByMe: hasSavedPostSnapshot
             ? savedPostIdsSet.has(post.id)
             : Boolean(post.savedByMe),
         })),
       ) ?? [],
-    [data, hasLikedPostSnapshot, hasSavedPostSnapshot, likedPostIdsSet, savedPostIdsSet],
+    [data, hasSavedPostSnapshot, savedPostIdsSet],
   );
 
   useEffect(() => {

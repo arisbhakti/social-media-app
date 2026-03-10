@@ -37,6 +37,14 @@ export type PostItem = {
   savedByMe?: boolean;
 };
 
+type PostDetailData = PostItem;
+
+export type PostDetailSuccessResponse = {
+  success: true;
+  message: string;
+  data: PostDetailData;
+};
+
 type PostsPagination = {
   page: number;
   limit: number;
@@ -267,6 +275,9 @@ type TogglePostLikeVariables = {
 type TogglePostLikeContext = {
   previousPostQueries: Array<[QueryKey, PostsInfiniteData | undefined]>;
   previousLikedIdQueries: Array<[QueryKey, number[] | undefined]>;
+  previousPostDetailQueries: Array<
+    [QueryKey, PostDetailSuccessResponse | undefined]
+  >;
 };
 
 type TogglePostSaveVariables = {
@@ -277,6 +288,9 @@ type TogglePostSaveVariables = {
 type TogglePostSaveContext = {
   previousPostQueries: Array<[QueryKey, PostsInfiniteData | undefined]>;
   previousSavedIdQueries: Array<[QueryKey, number[] | undefined]>;
+  previousPostDetailQueries: Array<
+    [QueryKey, PostDetailSuccessResponse | undefined]
+  >;
 };
 
 type ToggleFollowVariables = {
@@ -344,6 +358,7 @@ export const postQueryKeys = {
     ["me", "following", "infinite", limit] as const,
   myFollowersInfinite: (limit = 10) =>
     ["me", "followers", "infinite", limit] as const,
+  postDetail: (postId: number) => ["posts", postId, "detail"] as const,
   postLikesInfinite: (postId: number, limit = 20) =>
     ["posts", postId, "likes", "infinite", limit] as const,
   postComments: (postId: number, page = 1, limit = 10) =>
@@ -528,6 +543,16 @@ async function fetchPostLikes({
   );
 }
 
+async function fetchPostDetail(postId: number): Promise<PostDetailSuccessResponse> {
+  return requestApi<PostDetailData>(
+    `/api/posts/${postId}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch post detail"
+  );
+}
+
 async function fetchPostComments({
   postId,
   page,
@@ -706,6 +731,20 @@ function updatePostInInfiniteFeed(
         ),
       },
     })),
+  };
+}
+
+function updatePostDetailData(
+  source: PostDetailSuccessResponse | undefined,
+  updater: (post: PostItem) => PostItem
+) {
+  if (!source) {
+    return source;
+  }
+
+  return {
+    ...source,
+    data: updater(source.data),
   };
 }
 
@@ -1110,6 +1149,15 @@ export function usePostLikesInfiniteQuery(
   });
 }
 
+export function usePostDetailQuery(postId: number, enabled = true) {
+  return useQuery({
+    queryKey: postQueryKeys.postDetail(postId),
+    queryFn: () => fetchPostDetail(postId),
+    enabled: enabled && postId > 0,
+    refetchOnMount: "always",
+  });
+}
+
 export function usePostCommentsQuery(
   postId: number,
   page = 1,
@@ -1150,6 +1198,9 @@ export function useTogglePostLikeMutation(
         queryClient.cancelQueries({
           queryKey: ["posts", "liked", "ids"],
         }),
+        queryClient.cancelQueries({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        }),
       ]);
 
       const previousPostQueries =
@@ -1159,6 +1210,10 @@ export function useTogglePostLikeMutation(
       const previousLikedIdQueries = queryClient.getQueriesData<number[]>({
         queryKey: ["posts", "liked", "ids"],
       });
+      const previousPostDetailQueries =
+        queryClient.getQueriesData<PostDetailSuccessResponse>({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        });
 
       previousPostQueries.forEach(([queryKey]) => {
         queryClient.setQueryData<PostsInfiniteData>(queryKey, (oldData) =>
@@ -1179,9 +1234,20 @@ export function useTogglePostLikeMutation(
         );
       });
 
+      previousPostDetailQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<PostDetailSuccessResponse>(queryKey, (oldData) =>
+          updatePostDetailData(oldData, (post) => ({
+            ...post,
+            likedByMe: !variables.liked,
+            likeCount: Math.max(0, post.likeCount + (variables.liked ? -1 : 1)),
+          }))
+        );
+      });
+
       return {
         previousPostQueries,
         previousLikedIdQueries,
+        previousPostDetailQueries,
       };
     },
     onError: (error, _variables, context) => {
@@ -1189,6 +1255,9 @@ export function useTogglePostLikeMutation(
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousLikedIdQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousPostDetailQueries.forEach(([queryKey, oldData]) => {
         queryClient.setQueryData(queryKey, oldData);
       });
 
@@ -1226,16 +1295,33 @@ export function useTogglePostLikeMutation(
           );
         });
 
+      queryClient
+        .getQueriesData<PostDetailSuccessResponse>({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<PostDetailSuccessResponse>(queryKey, (oldData) =>
+            updatePostDetailData(oldData, (post) => ({
+              ...post,
+              likedByMe: nextLikedState,
+              likeCount: nextLikeCount,
+            }))
+          );
+        });
+
       if (showToast) {
         showSuccessToast(result.message);
       }
     },
-    onSettled: () => {
+    onSettled: (_result, _error, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["posts", "infinite"],
       });
       queryClient.invalidateQueries({
         queryKey: ["posts", "liked", "ids"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.postDetail(variables.postId),
       });
     },
   });
@@ -1263,6 +1349,9 @@ export function useTogglePostSaveMutation(
         queryClient.cancelQueries({
           queryKey: ["posts", "saved", "ids"],
         }),
+        queryClient.cancelQueries({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        }),
       ]);
 
       const previousPostQueries =
@@ -1272,6 +1361,10 @@ export function useTogglePostSaveMutation(
       const previousSavedIdQueries = queryClient.getQueriesData<number[]>({
         queryKey: ["posts", "saved", "ids"],
       });
+      const previousPostDetailQueries =
+        queryClient.getQueriesData<PostDetailSuccessResponse>({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        });
 
       previousPostQueries.forEach(([queryKey]) => {
         queryClient.setQueryData<PostsInfiniteData>(queryKey, (oldData) =>
@@ -1288,9 +1381,19 @@ export function useTogglePostSaveMutation(
         );
       });
 
+      previousPostDetailQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<PostDetailSuccessResponse>(queryKey, (oldData) =>
+          updatePostDetailData(oldData, (post) => ({
+            ...post,
+            savedByMe: !variables.saved,
+          }))
+        );
+      });
+
       return {
         previousPostQueries,
         previousSavedIdQueries,
+        previousPostDetailQueries,
       };
     },
     onError: (error, _variables, context) => {
@@ -1298,6 +1401,9 @@ export function useTogglePostSaveMutation(
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousSavedIdQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousPostDetailQueries.forEach(([queryKey, oldData]) => {
         queryClient.setQueryData(queryKey, oldData);
       });
 
@@ -1336,16 +1442,32 @@ export function useTogglePostSaveMutation(
           );
         });
 
+      queryClient
+        .getQueriesData<PostDetailSuccessResponse>({
+          queryKey: postQueryKeys.postDetail(variables.postId),
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<PostDetailSuccessResponse>(queryKey, (oldData) =>
+            updatePostDetailData(oldData, (post) => ({
+              ...post,
+              savedByMe: nextSavedState,
+            }))
+          );
+        });
+
       if (showToast) {
         showSuccessToast(result.message);
       }
     },
-    onSettled: () => {
+    onSettled: (_result, _error, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["posts", "infinite"],
       });
       queryClient.invalidateQueries({
         queryKey: ["posts", "saved", "ids"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.postDetail(variables.postId),
       });
     },
   });
@@ -1379,6 +1501,9 @@ export function useCreatePostCommentMutation(
       onSettled: (_result, _error, variables) => {
         queryClient.invalidateQueries({
           queryKey: postQueryKeys.postCommentsList(variables.postId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: postQueryKeys.postDetail(variables.postId),
         });
 
         if (invalidatePosts) {

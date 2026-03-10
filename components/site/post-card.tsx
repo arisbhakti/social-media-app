@@ -37,6 +37,7 @@ import {
   type PostCommentItem,
   useCreatePostCommentMutation,
   usePostCommentsQuery,
+  usePostDetailQuery,
   useTogglePostLikeMutation,
   useTogglePostSaveMutation,
 } from "@/lib/tanstack/post-queries";
@@ -111,6 +112,27 @@ function CommentsListSkeleton() {
   );
 }
 
+function ComposerSkeleton() {
+  return (
+    <div className="flex items-center gap-2">
+      <Skeleton className="size-12 rounded-[14px]" />
+      <Skeleton className="h-12 flex-1 rounded-[14px]" />
+    </div>
+  );
+}
+
+function ModalActionStatsSkeleton() {
+  return (
+    <div className="flex items-center justify-between border-y border-y-[rgba(126,145,183,0.2)] py-3">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-6 w-20" />
+        <Skeleton className="h-6 w-24" />
+      </div>
+      <Skeleton className="size-6 rounded-sm" />
+    </div>
+  );
+}
+
 function mapCommentItem(comment: PostCommentItem): CommentItem {
   const authorName = comment.author.name.trim() || comment.author.username || "Unknown";
 
@@ -146,12 +168,34 @@ export function PostCard({
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
   const isMobile = useIsMobile();
+  const postDetailQuery = usePostDetailQuery(postId, isCommentsOpen);
+  const modalPostDetail = postDetailQuery.data?.data;
   const commentsQuery = usePostCommentsQuery(postId, 1, 10, isCommentsOpen);
   const createPostCommentMutation = useCreatePostCommentMutation();
   const comments = useMemo<CommentItem[]>(
     () => commentsQuery.data?.data.comments.map(mapCommentItem) ?? [],
     [commentsQuery.data],
   );
+  const modalAuthorName =
+    modalPostDetail?.author.name.trim() ||
+    modalPostDetail?.author.username ||
+    authorName;
+  const modalAuthorAvatarUrl = modalPostDetail?.author.avatarUrl ?? authorAvatarUrl;
+  const modalCaption = modalPostDetail?.caption ?? caption;
+  const modalCaptionText = modalCaption.trim() || "-";
+  const modalCreatedAtLabel = modalPostDetail
+    ? formatRelativeTime(modalPostDetail.createdAt)
+    : createdAtLabel;
+  const modalLikeCount = modalPostDetail?.likeCount ?? likeCount;
+  const modalCommentCount = modalPostDetail?.commentCount ?? commentCount;
+  const modalLiked = modalPostDetail?.likedByMe ?? liked;
+  const modalSaved = modalPostDetail?.savedByMe ?? saved;
+  const modalImageSrc = modalPostDetail?.imageUrl ?? imageSrc;
+  const cardAvatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
+  const modalAvatarFallback = modalAuthorName.trim().charAt(0).toUpperCase() || "U";
+  const isPostDetailLoading =
+    postDetailQuery.isLoading || (postDetailQuery.isFetching && !modalPostDetail);
+  const hasPostDetailError = Boolean(postDetailQuery.error) && !modalPostDetail;
   const isCreateCommentPending =
     createPostCommentMutation.isPending &&
     createPostCommentMutation.variables?.postId === postId;
@@ -162,7 +206,6 @@ export function PostCard({
     hasLongCaption && !isCaptionExpanded
       ? `${normalizedCaption.slice(0, 140)}...`
       : normalizedCaption;
-  const avatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
   const togglePostLikeMutation = useTogglePostLikeMutation();
   const togglePostSaveMutation = useTogglePostSaveMutation();
   const isLikePending =
@@ -171,37 +214,44 @@ export function PostCard({
   const isSavePending =
     togglePostSaveMutation.isPending &&
     togglePostSaveMutation.variables?.postId === postId;
-  const commentsTotalCount = commentsQuery.data?.data.pagination.total ?? commentCount;
+  const commentsTotalCount =
+    commentsQuery.data?.data.pagination.total ?? modalCommentCount;
   const commentsErrorMessage =
     commentsQuery.error instanceof ApiError
       ? commentsQuery.error.message
       : commentsQuery.error instanceof Error
         ? commentsQuery.error.message
         : "Gagal memuat komentar";
+  const postDetailErrorMessage =
+    postDetailQuery.error instanceof ApiError
+      ? postDetailQuery.error.message
+      : postDetailQuery.error instanceof Error
+        ? postDetailQuery.error.message
+        : "Gagal memuat detail post";
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
   };
 
-  const handleToggleLike = () => {
+  const handleToggleLike = (currentLiked: boolean) => {
     if (isLikePending) {
       return;
     }
 
     togglePostLikeMutation.mutate({
       postId,
-      liked,
+      liked: currentLiked,
     });
   };
 
-  const handleToggleSave = () => {
+  const handleToggleSave = (currentSaved: boolean) => {
     if (isSavePending) {
       return;
     }
 
     togglePostSaveMutation.mutate({
       postId,
-      saved,
+      saved: currentSaved,
     });
   };
 
@@ -308,7 +358,7 @@ export function PostCard({
               src={authorAvatarUrl ?? "/dummy-profile-image.png"}
               alt={authorName}
             />
-            <AvatarFallback>{avatarFallback}</AvatarFallback>
+            <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
           </Avatar>
           <div className="grid gap-0">
             <span className="text-sm md:text-md font-bold">{authorName}</span>
@@ -318,7 +368,12 @@ export function PostCard({
           </div>
         </div>
 
-        <div className="w-full overflow-hidden rounded-xl">
+        <button
+          type="button"
+          onClick={handleOpenComments}
+          className="w-full overflow-hidden rounded-xl transition-opacity hover:opacity-95"
+          aria-label="Open comments"
+        >
           <Image
             src={imageSrc}
             alt={imageAlt}
@@ -326,7 +381,7 @@ export function PostCard({
             height={1000}
             className="md:h-150 aspect-square w-full object-cover"
           />
-        </div>
+        </button>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-4">
@@ -336,7 +391,7 @@ export function PostCard({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={liked ? "Unlike post" : "Like post"}
-                onClick={handleToggleLike}
+                onClick={() => handleToggleLike(liked)}
                 disabled={isLikePending}
                 className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] disabled:opacity-70"
               >
@@ -353,7 +408,7 @@ export function PostCard({
                 onClick={() => setIsLikesOpen(true)}
                 className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:text-md"
               >
-                {likeCount}
+                {modalLikeCount}
               </Button>
             </div>
             <ActionButton
@@ -373,7 +428,7 @@ export function PostCard({
             variant="ghost"
             size="icon-sm"
             aria-label={saved ? "Unsave post" : "Save post"}
-            onClick={handleToggleSave}
+            onClick={() => handleToggleSave(saved)}
             disabled={isSavePending}
             className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
           >
@@ -464,64 +519,96 @@ export function PostCard({
                 Comments
               </h2>
 
-              <div className="mt-3 flex items-center justify-between border-y border-y-[rgba(126,145,183,0.2)] py-3">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={liked ? "Unlike post" : "Like post"}
-                      onClick={handleToggleLike}
-                      disabled={isLikePending}
-                      className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
-                    >
-                      {liked ? (
-                        <IoHeart className="size-6 text-red" />
-                      ) : (
-                        <IoHeartOutline className="size-6" />
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      aria-label="Open likes list"
-                      onClick={() => setIsLikesOpen(true)}
-                      className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
-                    >
-                      {likeCount}
-                    </Button>
-                  </div>
-                  <ModalActionStat
-                    label="Total comments"
-                    count={commentsTotalCount}
-                    icon={<IoChatbubbleOutline className="size-5" />}
-                  />
+              {hasPostDetailError ? (
+                <div className="mt-3 grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+                  <p className="text-sm text-[var(--red)]">{postDetailErrorMessage}</p>
+                  <Button
+                    type="button"
+                    onClick={() => postDetailQuery.refetch()}
+                    className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                  >
+                    Coba lagi
+                  </Button>
                 </div>
+              ) : isPostDetailLoading ? (
+                <div className="mt-3">
+                  <ModalActionStatsSkeleton />
+                </div>
+              ) : (
+                <div className="mt-3 flex items-center justify-between border-y border-y-[rgba(126,145,183,0.2)] py-3">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={modalLiked ? "Unlike post" : "Like post"}
+                        onClick={() => handleToggleLike(modalLiked)}
+                        disabled={isLikePending}
+                        className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                      >
+                        {modalLiked ? (
+                          <IoHeart className="size-6 text-red" />
+                        ) : (
+                          <IoHeartOutline className="size-6" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        aria-label="Open likes list"
+                        onClick={() => setIsLikesOpen(true)}
+                        className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
+                      >
+                        {modalLikeCount}
+                      </Button>
+                    </div>
+                    <ModalActionStat
+                      label="Total comments"
+                      count={commentsTotalCount}
+                      icon={<IoChatbubbleOutline className="size-5" />}
+                    />
+                  </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={saved ? "Unsave post" : "Save post"}
-                  onClick={handleToggleSave}
-                  disabled={isSavePending}
-                  className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
-                >
-                  {saved ? (
-                    <IoBookmark className="size-6" />
-                  ) : (
-                    <IoBookmarkOutline className="size-6" />
-                  )}
-                </Button>
-              </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={modalSaved ? "Unsave post" : "Save post"}
+                    onClick={() => handleToggleSave(modalSaved)}
+                    disabled={isSavePending}
+                    className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                  >
+                    {modalSaved ? (
+                      <IoBookmark className="size-6" />
+                    ) : (
+                      <IoBookmarkOutline className="size-6" />
+                    )}
+                  </Button>
+                </div>
+              )}
 
               <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto">
-                {commentsListContent}
+                {hasPostDetailError ? (
+                  <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+                    <p className="text-sm text-[var(--red)]">{postDetailErrorMessage}</p>
+                    <Button
+                      type="button"
+                      onClick={() => postDetailQuery.refetch()}
+                      className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                    >
+                      Coba lagi
+                    </Button>
+                  </div>
+                ) : isPostDetailLoading ? (
+                  <CommentsListSkeleton />
+                ) : (
+                  commentsListContent
+                )}
               </div>
 
               <div className="relative mt-4">
-                {isEmojiPickerOpen ? (
+                {isEmojiPickerOpen && !isPostDetailLoading && !hasPostDetailError ? (
                   <div
                     ref={emojiPickerRef}
                     className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
@@ -540,51 +627,55 @@ export function PostCard({
                   </div>
                 ) : null}
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    ref={emojiButtonRef}
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Add emoji"
-                    onClick={() => setIsEmojiPickerOpen((value) => !value)}
-                    className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
-                  >
-                    <IoHappyOutline className="size-6" />
-                  </Button>
-
-                  <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
-                    <input
-                      type="text"
-                      aria-label="Add comment"
-                      placeholder="Add Comment"
-                      value={commentInput}
-                      onChange={(event) => setCommentInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          handleSubmitComment();
-                        }
-                      }}
-                      className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
-                    />
-
+                {isPostDetailLoading || hasPostDetailError ? (
+                  <ComposerSkeleton />
+                ) : (
+                  <div className="flex items-center gap-2">
                     <Button
+                      ref={emojiButtonRef}
                       type="button"
                       variant="ghost"
-                      onClick={handleSubmitComment}
-                      disabled={isPostDisabled}
-                      className={cn(
-                        "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
-                        isPostDisabled
-                          ? "text-[var(--neutral-500)]"
-                          : "text-[var(--primary-200)] hover:text-[var(--primary-200)]",
-                      )}
+                      size="icon-sm"
+                      aria-label="Add emoji"
+                      onClick={() => setIsEmojiPickerOpen((value) => !value)}
+                      className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
                     >
-                      {isCreateCommentPending ? "Posting..." : "Post"}
+                      <IoHappyOutline className="size-6" />
                     </Button>
+
+                    <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
+                      <input
+                        type="text"
+                        aria-label="Add comment"
+                        placeholder="Add Comment"
+                        value={commentInput}
+                        onChange={(event) => setCommentInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            handleSubmitComment();
+                          }
+                        }}
+                        className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
+                      />
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleSubmitComment}
+                        disabled={isPostDisabled}
+                        className={cn(
+                          "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
+                          isPostDisabled
+                            ? "text-[var(--neutral-500)]"
+                            : "text-[var(--primary-200)] hover:text-[var(--primary-200)]",
+                        )}
+                      >
+                        {isCreateCommentPending ? "Posting..." : "Post"}
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </DrawerContent>
@@ -610,48 +701,99 @@ export function PostCard({
               <div className="overflow-hidden  bg-black">
                 <div className="grid h-[min(84vh,760px)] grid-cols-[minmax(360px,1fr)_minmax(380px,500px)]">
                   <div className="relative h-full bg-red-500">
-                    <Image
-                      src={imageSrc}
-                      alt={imageAlt}
-                      fill
-                      sizes="(max-width: 1200px) 60vw, 720px"
-                      className="object-cover"
-                    />
+                    {isPostDetailLoading ? (
+                      <Skeleton className="h-full w-full rounded-none" />
+                    ) : hasPostDetailError ? (
+                      <div className="grid h-full place-items-center px-6 text-center">
+                        <div className="grid gap-3">
+                          <p className="text-sm text-[var(--red)]">
+                            {postDetailErrorMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            onClick={() => postDetailQuery.refetch()}
+                            className="h-9 rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                          >
+                            Coba lagi
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Image
+                        src={modalImageSrc}
+                        alt={imageAlt}
+                        fill
+                        sizes="(max-width: 1200px) 60vw, 720px"
+                        className="object-cover"
+                      />
+                    )}
                   </div>
 
                   <div className="flex min-h-0 flex-col bg-neutral-950 p-5 ">
                     <div className="border-b border-b-neutral-900 pb-4 flex flex-col gap-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="size-10 ">
-                            <AvatarImage
-                              src={authorAvatarUrl ?? "/dummy-profile-image.png"}
-                              alt={authorName}
-                            />
-                            <AvatarFallback>{avatarFallback}</AvatarFallback>
-                          </Avatar>
-                          <div className="grid gap-0.5">
-                            <span className="text-sm font-bold">
-                              {authorName}
-                            </span>
-                            <span className="text-xs text-neutral-400">
-                              {createdAtLabel}
-                            </span>
-                          </div>
+                      {hasPostDetailError ? (
+                        <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+                          <p className="text-sm text-[var(--red)]">
+                            {postDetailErrorMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            onClick={() => postDetailQuery.refetch()}
+                            className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                          >
+                            Coba lagi
+                          </Button>
                         </div>
+                      ) : isPostDetailLoading ? (
+                        <>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="size-10 rounded-full" />
+                              <div className="grid gap-1.5">
+                                <Skeleton className="h-4 w-28" />
+                                <Skeleton className="h-3 w-20" />
+                              </div>
+                            </div>
+                            <Skeleton className="size-6 rounded-full" />
+                          </div>
+                          <Skeleton className="h-4 w-[85%]" />
+                          <Skeleton className="h-4 w-[65%]" />
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-10 ">
+                                <AvatarImage
+                                  src={modalAuthorAvatarUrl ?? "/dummy-profile-image.png"}
+                                  alt={modalAuthorName}
+                                />
+                                <AvatarFallback>{modalAvatarFallback}</AvatarFallback>
+                              </Avatar>
+                              <div className="grid gap-0.5">
+                                <span className="text-sm font-bold">
+                                  {modalAuthorName}
+                                </span>
+                                <span className="text-xs text-neutral-400">
+                                  {modalCreatedAtLabel}
+                                </span>
+                              </div>
+                            </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label="More options"
-                          className="size-6 rounded-full p-0 hover:bg-transparent"
-                        >
-                          <IoEllipsisHorizontal className="size-6" />
-                        </Button>
-                      </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="More options"
+                              className="size-6 rounded-full p-0 hover:bg-transparent"
+                            >
+                              <IoEllipsisHorizontal className="size-6" />
+                            </Button>
+                          </div>
 
-                      <p className="text-sm text-neutral-25">{normalizedCaption}</p>
+                          <p className="text-sm text-neutral-25">{modalCaptionText}</p>
+                        </>
+                      )}
                     </div>
 
                     <div className="mt-5 flex min-h-0 flex-1 flex-col">
@@ -660,70 +802,104 @@ export function PostCard({
                       </h2>
 
                       <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
-                        {commentsListContent}
+                        {hasPostDetailError ? (
+                          <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+                            <p className="text-sm text-[var(--red)]">
+                              {postDetailErrorMessage}
+                            </p>
+                            <Button
+                              type="button"
+                              onClick={() => postDetailQuery.refetch()}
+                              className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                            >
+                              Coba lagi
+                            </Button>
+                          </div>
+                        ) : isPostDetailLoading ? (
+                          <CommentsListSkeleton />
+                        ) : (
+                          commentsListContent
+                        )}
                       </div>
                     </div>
 
                     <div className="mt-4 border-t border-t-neutral-900 pt-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label={liked ? "Unlike post" : "Like post"}
-                              onClick={handleToggleLike}
-                              disabled={isLikePending}
-                              className="size-6 rounded-none p-0 text-white hover:bg-transparent disabled:opacity-70"
-                            >
-                              {liked ? (
-                                <IoHeart className="size-6 text-red" />
-                              ) : (
-                                <IoHeartOutline className="size-6" />
-                              )}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              aria-label="Open likes list"
-                              onClick={() => setIsLikesOpen(true)}
-                              className="h-auto rounded-none p-0 text-md font-semibold text-white hover:bg-transparent hover:text-white"
-                            >
-                              {likeCount}
-                            </Button>
-                          </div>
-                          <ModalActionStat
-                            label="Total comments"
-                            count={commentsTotalCount}
-                            icon={<IoChatbubbleOutline className="size-6" />}
-                          />
-                          <ModalActionStat
-                            label="Total shares"
-                            count={0}
-                            icon={<IoPaperPlaneOutline className="size-6" />}
-                          />
+                      {hasPostDetailError ? (
+                        <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+                          <p className="text-sm text-[var(--red)]">
+                            {postDetailErrorMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            onClick={() => postDetailQuery.refetch()}
+                            className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+                          >
+                            Coba lagi
+                          </Button>
                         </div>
+                      ) : isPostDetailLoading ? (
+                        <ModalActionStatsSkeleton />
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label={modalLiked ? "Unlike post" : "Like post"}
+                                onClick={() => handleToggleLike(modalLiked)}
+                                disabled={isLikePending}
+                                className="size-6 rounded-none p-0 text-white hover:bg-transparent disabled:opacity-70"
+                              >
+                                {modalLiked ? (
+                                  <IoHeart className="size-6 text-red" />
+                                ) : (
+                                  <IoHeartOutline className="size-6" />
+                                )}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                aria-label="Open likes list"
+                                onClick={() => setIsLikesOpen(true)}
+                                className="h-auto rounded-none p-0 text-md font-semibold text-white hover:bg-transparent hover:text-white"
+                              >
+                                {modalLikeCount}
+                              </Button>
+                            </div>
+                            <ModalActionStat
+                              label="Total comments"
+                              count={commentsTotalCount}
+                              icon={<IoChatbubbleOutline className="size-6" />}
+                            />
+                            <ModalActionStat
+                              label="Total shares"
+                              count={0}
+                              icon={<IoPaperPlaneOutline className="size-6" />}
+                            />
+                          </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={saved ? "Unsave post" : "Save post"}
-                          onClick={handleToggleSave}
-                          disabled={isSavePending}
-                          className="size-6 rounded-none p-0 text-white"
-                        >
-                          {saved ? (
-                            <IoBookmark className="size-6" />
-                          ) : (
-                            <IoBookmarkOutline className="size-6" />
-                          )}
-                        </Button>
-                      </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={modalSaved ? "Unsave post" : "Save post"}
+                            onClick={() => handleToggleSave(modalSaved)}
+                            disabled={isSavePending}
+                            className="size-6 rounded-none p-0 text-white"
+                          >
+                            {modalSaved ? (
+                              <IoBookmark className="size-6" />
+                            ) : (
+                              <IoBookmarkOutline className="size-6" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
 
                       <div className="relative mt-4">
-                        {isEmojiPickerOpen ? (
+                        {isEmojiPickerOpen && !isPostDetailLoading && !hasPostDetailError ? (
                           <div
                             ref={emojiPickerRef}
                             className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
@@ -742,54 +918,58 @@ export function PostCard({
                           </div>
                         ) : null}
 
-                        <div className="flex items-center gap-2">
-                          <Button
-                            ref={emojiButtonRef}
-                            type="button"
-                            variant="ghost"
-                            aria-label="Add emoji"
-                            onClick={() =>
-                              setIsEmojiPickerOpen((value) => !value)
-                            }
-                            className="size-12 rounded-2xl border border-neutral-900 p-0 text-white "
-                          >
-                            <IoHappyOutline className="size-6" />
-                          </Button>
-
-                          <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2">
-                            <input
-                              type="text"
-                              aria-label="Add comment"
-                              placeholder="Add Comment"
-                              value={commentInput}
-                              onChange={(event) =>
-                                setCommentInput(event.target.value)
-                              }
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                  event.preventDefault();
-                                  handleSubmitComment();
-                                }
-                              }}
-                              className="h-full min-w-0 flex-1 bg-transparent text-md text-white outline-none placeholder:text-neutral-600 font-medium"
-                            />
-
+                        {isPostDetailLoading || hasPostDetailError ? (
+                          <ComposerSkeleton />
+                        ) : (
+                          <div className="flex items-center gap-2">
                             <Button
+                              ref={emojiButtonRef}
                               type="button"
                               variant="ghost"
-                              onClick={handleSubmitComment}
-                              disabled={isPostDisabled}
-                              className={cn(
-                                "h-auto rounded-none p-0 text-md font-bold hover:bg-transparent",
-                                isPostDisabled
-                                  ? "text-neutral-600"
-                                  : "text-primary-200 hover:text-primary-300",
-                              )}
+                              aria-label="Add emoji"
+                              onClick={() =>
+                                setIsEmojiPickerOpen((value) => !value)
+                              }
+                              className="size-12 rounded-2xl border border-neutral-900 p-0 text-white "
                             >
-                              {isCreateCommentPending ? "Posting..." : "Post"}
+                              <IoHappyOutline className="size-6" />
                             </Button>
+
+                            <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2">
+                              <input
+                                type="text"
+                                aria-label="Add comment"
+                                placeholder="Add Comment"
+                                value={commentInput}
+                                onChange={(event) =>
+                                  setCommentInput(event.target.value)
+                                }
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    handleSubmitComment();
+                                  }
+                                }}
+                                className="h-full min-w-0 flex-1 bg-transparent text-md text-white outline-none placeholder:text-neutral-600 font-medium"
+                              />
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={handleSubmitComment}
+                                disabled={isPostDisabled}
+                                className={cn(
+                                  "h-auto rounded-none p-0 text-md font-bold hover:bg-transparent",
+                                  isPostDisabled
+                                    ? "text-neutral-600"
+                                    : "text-primary-200 hover:text-primary-300",
+                                )}
+                              >
+                                {isCreateCommentPending ? "Posting..." : "Post"}
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
