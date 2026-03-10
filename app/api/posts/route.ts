@@ -53,8 +53,17 @@ function toPositiveInt(value: string | null, fallback: number) {
   return parsedValue;
 }
 
-export async function GET(request: Request) {
+function getBaseApiUrl() {
   const baseApiUrl = process.env.BASE_API_URL;
+  if (!baseApiUrl) {
+    return null;
+  }
+
+  return baseApiUrl.replace(/\/+$/, "");
+}
+
+export async function GET(request: Request) {
+  const baseApiUrl = getBaseApiUrl();
   if (!baseApiUrl) {
     return toApiError("BASE_API_URL is not configured", 500);
   }
@@ -70,7 +79,7 @@ export async function GET(request: Request) {
 
   try {
     const response = await fetch(
-      `${baseApiUrl.replace(/\/+$/, "")}/api/posts?page=${page}&limit=${limit}`,
+      `${baseApiUrl}/api/posts?page=${page}&limit=${limit}`,
       {
         method: "GET",
         headers: {
@@ -96,5 +105,69 @@ export async function GET(request: Request) {
     return toApiError("Invalid response from posts service", 502);
   } catch {
     return toApiError("Unable to reach posts service", 500);
+  }
+}
+
+export async function POST(request: Request) {
+  const baseApiUrl = getBaseApiUrl();
+  if (!baseApiUrl) {
+    return toApiError("BASE_API_URL is not configured", 500);
+  }
+
+  const authorization = request.headers.get("authorization");
+  if (!authorization) {
+    return toApiError("Unauthorized", 401);
+  }
+
+  let payload: FormData;
+  try {
+    payload = await request.formData();
+  } catch {
+    return toApiError("Invalid request body", 400);
+  }
+
+  const caption = payload.get("caption");
+  const image = payload.get("image");
+
+  const normalizedCaption =
+    typeof caption === "string" ? caption.trim() : "";
+  if (!normalizedCaption) {
+    return toApiError("Caption is required", 400);
+  }
+
+  if (!(image instanceof File) || image.size === 0) {
+    return toApiError("Image is required", 400);
+  }
+
+  const forwardedPayload = new FormData();
+  forwardedPayload.set("caption", normalizedCaption);
+  forwardedPayload.set("image", image, image.name || "post-image.jpg");
+
+  try {
+    const response = await fetch(`${baseApiUrl}/api/posts`, {
+      method: "POST",
+      headers: {
+        accept: "*/*",
+        authorization,
+      },
+      body: forwardedPayload,
+      cache: "no-store",
+    });
+
+    const responseBody = await parseJsonBody<unknown>(response);
+
+    if (responseBody && isApiResponse(responseBody)) {
+      return NextResponse.json(responseBody, {
+        status: response.status,
+      });
+    }
+
+    if (!response.ok) {
+      return toApiError("Failed to create post", response.status);
+    }
+
+    return toApiError("Invalid response from create post service", 502);
+  } catch {
+    return toApiError("Unable to reach create post service", 500);
   }
 }

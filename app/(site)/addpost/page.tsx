@@ -19,7 +19,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { showSuccessToast } from "@/components/ui/app-toast";
+import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
+import {
+  ApiError,
+  useCreatePostMutation,
+} from "@/lib/tanstack/post-queries";
 import { cn } from "@/lib/utils";
 
 const MAX_FILE_SIZE_IN_BYTES = 5 * 1024 * 1024;
@@ -41,15 +45,30 @@ function validateImage(file: File | null) {
   return null;
 }
 
+function getCreatePostErrorMessage(error: unknown) {
+  if (error instanceof ApiError) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Terjadi kesalahan saat membuat postingan.";
+}
+
 export default function AddPostPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const createPostMutation = useCreatePostMutation({
+    showToast: false,
+    invalidatePosts: true,
+  });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [captionError, setCaptionError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const previewUrl = useMemo(
@@ -137,7 +156,7 @@ export default function AddPostPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (isSubmitting) {
+    if (createPostMutation.isPending) {
       return;
     }
 
@@ -153,12 +172,23 @@ export default function AddPostPage() {
       return;
     }
 
-    setIsSubmitting(true);
+    if (!selectedFile) {
+      return;
+    }
 
-    await new Promise((resolve) => setTimeout(resolve, 450));
+    try {
+      const response = await createPostMutation.mutateAsync({
+        caption: caption.trim(),
+        image: selectedFile,
+      });
 
-    showSuccessToast("Post Success Upload");
-    router.push("/home");
+      showSuccessToast(response.message || "Post berhasil dibuat.");
+      router.push("/home");
+    } catch (error) {
+      showErrorToast("Gagal membuat post", {
+        description: getCreatePostErrorMessage(error),
+      });
+    }
   };
 
   const hasImagePreview = Boolean(previewUrl);
@@ -319,10 +349,10 @@ export default function AddPostPage() {
 
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={createPostMutation.isPending}
               className="mt-5 h-10 md:h-12 w-full rounded-full bg-primary-300 text-sm md:text-md font-bold md:mt-6"
             >
-              {isSubmitting ? "Sharing..." : "Share"}
+              {createPostMutation.isPending ? "Sharing..." : "Share"}
             </Button>
           </div>
         </form>

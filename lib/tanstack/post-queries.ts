@@ -162,6 +162,14 @@ type CreatePostCommentSuccessResponse = {
   data: CreatePostCommentData;
 };
 
+type CreatePostData = PostItem;
+
+type CreatePostSuccessResponse = {
+  success: true;
+  message: string;
+  data: CreatePostData;
+};
+
 type TogglePostLikeData = {
   liked: boolean;
   likeCount: number;
@@ -235,6 +243,11 @@ type CreatePostCommentVariables = {
   text: string;
 };
 
+type CreatePostVariables = {
+  caption: string;
+  image: File;
+};
+
 type ToggleFollowContext = {
   previousPostLikesQueries: Array<[QueryKey, PostLikesInfiniteData | undefined]>;
   previousFollowingIdQueries: Array<[QueryKey, number[] | undefined]>;
@@ -253,6 +266,11 @@ type ToggleFollowMutationOptions = {
 };
 
 type CreateCommentMutationOptions = {
+  showToast?: boolean;
+  invalidatePosts?: boolean;
+};
+
+type CreatePostMutationOptions = {
   showToast?: boolean;
   invalidatePosts?: boolean;
 };
@@ -551,6 +569,24 @@ async function createPostComment({
   );
 }
 
+async function createPost({
+  caption,
+  image,
+}: CreatePostVariables): Promise<CreatePostSuccessResponse> {
+  const formData = new FormData();
+  formData.set("caption", caption.trim());
+  formData.set("image", image, image.name);
+
+  return requestApi<CreatePostData>(
+    "/api/posts",
+    {
+      method: "POST",
+      body: formData,
+    },
+    "Failed to create post"
+  );
+}
+
 function updatePostInInfiniteFeed(
   source: PostsInfiniteData | undefined,
   postId: number,
@@ -571,6 +607,53 @@ function updatePostInInfiniteFeed(
         ),
       },
     })),
+  };
+}
+
+function prependPostToInfiniteFeed(
+  source: PostsInfiniteData | undefined,
+  post: PostItem
+) {
+  if (!source || source.pages.length === 0) {
+    return source;
+  }
+
+  const isPostAlreadyInFeed = source.pages.some((page) =>
+    page.data.posts.some((item) => item.id === post.id)
+  );
+
+  const currentTotal = source.pages[0]?.data.pagination.total ?? 0;
+  const nextTotal = isPostAlreadyInFeed ? currentTotal : currentTotal + 1;
+
+  return {
+    ...source,
+    pages: source.pages.map((page, pageIndex) => {
+      const nextPosts =
+        pageIndex === 0
+          ? [post, ...page.data.posts.filter((item) => item.id !== post.id)]
+          : page.data.posts.filter((item) => item.id !== post.id);
+
+      const nextTotalPages =
+        page.data.pagination.limit > 0
+          ? Math.max(
+              page.data.pagination.totalPages,
+              Math.ceil(nextTotal / page.data.pagination.limit)
+            )
+          : page.data.pagination.totalPages;
+
+      return {
+        ...page,
+        data: {
+          ...page.data,
+          posts: nextPosts,
+          pagination: {
+            ...page.data.pagination,
+            total: nextTotal,
+            totalPages: nextTotalPages,
+          },
+        },
+      };
+    }),
   };
 }
 
@@ -626,6 +709,44 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
   }
 
   return fallbackMessage;
+}
+
+function getFeedLimitFromQueryKey(queryKey: QueryKey, fallback = 20) {
+  if (!Array.isArray(queryKey)) {
+    return fallback;
+  }
+
+  const limit = queryKey[2];
+  if (typeof limit !== "number" || !Number.isFinite(limit) || limit < 1) {
+    return fallback;
+  }
+
+  return limit;
+}
+
+function createSeededFeedData(
+  post: PostItem,
+  message: string,
+  limit = 20
+): PostsInfiniteData {
+  return {
+    pages: [
+      {
+        success: true,
+        message,
+        data: {
+          posts: [post],
+          pagination: {
+            page: 1,
+            limit,
+            total: 1,
+            totalPages: 1,
+          },
+        },
+      },
+    ],
+    pageParams: [1],
+  };
 }
 
 export function usePostsInfiniteQuery(limit = 20) {
@@ -980,6 +1101,67 @@ export function useCreatePostCommentMutation(
       },
     }
   );
+}
+
+export function useCreatePostMutation(
+  options: CreatePostMutationOptions = {}
+) {
+  const { showToast = false, invalidatePosts = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation<CreatePostSuccessResponse, unknown, CreatePostVariables>({
+    mutationKey: ["posts", "create"],
+    mutationFn: createPost,
+    onError: (error) => {
+      if (showToast) {
+        showErrorToast("Gagal membuat post", {
+          description: getErrorMessage(
+            error,
+            "Terjadi kesalahan saat membuat postingan."
+          ),
+        });
+      }
+    },
+    onSuccess: (result) => {
+      const feedQueries = queryClient.getQueriesData<PostsInfiniteData>({
+        queryKey: ["posts", "infinite"],
+      });
+
+      if (feedQueries.length === 0) {
+        queryClient.setQueryData<PostsInfiniteData>(
+          postQueryKeys.feedInfinite(20),
+          createSeededFeedData(result.data, result.message, 20)
+        );
+      }
+
+      feedQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<PostsInfiniteData>(queryKey, (oldData) => {
+          if (!oldData) {
+            return createSeededFeedData(
+              result.data,
+              result.message,
+              getFeedLimitFromQueryKey(queryKey, 20)
+            );
+          }
+
+          return prependPostToInfiniteFeed(oldData, result.data);
+        });
+      });
+
+      if (showToast) {
+        showSuccessToast(result.message);
+      }
+    },
+    onSettled: () => {
+      if (!invalidatePosts) {
+        return;
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ["posts", "infinite"],
+      });
+    },
+  });
 }
 
 export function useToggleFollowMutation(
