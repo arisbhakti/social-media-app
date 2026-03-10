@@ -4,7 +4,6 @@ export type PostCardProps = {
   imageAlt?: string;
   liked?: boolean;
   saved?: boolean;
-  hasInitialComments?: boolean;
   authorName?: string;
   authorAvatarUrl?: string | null;
   caption?: string;
@@ -16,6 +15,9 @@ export type PostCardProps = {
 export type CommentItem = {
   id: number;
   name: string;
+  username?: string;
+  avatarUrl?: string | null;
   content: string;
   createdAt: string;
+  isMine?: boolean;
 };

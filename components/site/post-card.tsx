@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 
 import {
@@ -20,7 +20,6 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ActionButton } from "@/components/site/post-card/action-button";
 import { CommentRow } from "@/components/site/post-card/comment-row";
-import { DEFAULT_COMMENTS } from "@/components/site/post-card/constants";
 import { LikesList } from "@/components/site/post-card/likes-list";
 import { ModalActionStat } from "@/components/site/post-card/modal-action-stat";
 import type {
@@ -32,7 +31,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
+  ApiError,
+  type PostCommentItem,
+  useCreatePostCommentMutation,
+  usePostCommentsQuery,
   useTogglePostLikeMutation,
   useTogglePostSaveMutation,
 } from "@/lib/tanstack/post-queries";
@@ -43,13 +47,90 @@ const EmojiPicker = dynamic(
   { ssr: false },
 );
 
+function formatRelativeTime(isoDate: string) {
+  const targetDate = new Date(isoDate);
+  if (Number.isNaN(targetDate.getTime())) {
+    return "Just now";
+  }
+
+  const secondsDiff = Math.round(
+    (targetDate.getTime() - Date.now()) / 1000,
+  );
+  const absoluteSeconds = Math.abs(secondsDiff);
+  const formatter = new Intl.RelativeTimeFormat("en", {
+    numeric: "auto",
+  });
+
+  if (absoluteSeconds < 60) {
+    return formatter.format(secondsDiff, "second");
+  }
+
+  const minutesDiff = Math.round(secondsDiff / 60);
+  if (Math.abs(minutesDiff) < 60) {
+    return formatter.format(minutesDiff, "minute");
+  }
+
+  const hoursDiff = Math.round(minutesDiff / 60);
+  if (Math.abs(hoursDiff) < 24) {
+    return formatter.format(hoursDiff, "hour");
+  }
+
+  const daysDiff = Math.round(hoursDiff / 24);
+  if (Math.abs(daysDiff) < 30) {
+    return formatter.format(daysDiff, "day");
+  }
+
+  const monthsDiff = Math.round(daysDiff / 30);
+  if (Math.abs(monthsDiff) < 12) {
+    return formatter.format(monthsDiff, "month");
+  }
+
+  const yearsDiff = Math.round(monthsDiff / 12);
+  return formatter.format(yearsDiff, "year");
+}
+
+function CommentsListSkeleton() {
+  return (
+    <div className="grid gap-4 pr-1">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={`comment-list-skeleton-${index}`}
+          className="grid gap-2 border-b border-neutral-900 pb-3 last:border-b-0 last:pb-0 md:gap-2.5 md:pb-4"
+        >
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-10 rounded-full" />
+            <div className="grid gap-1.5">
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function mapCommentItem(comment: PostCommentItem): CommentItem {
+  const authorName = comment.author.name.trim() || comment.author.username || "Unknown";
+
+  return {
+    id: comment.id,
+    name: authorName,
+    username: comment.author.username,
+    avatarUrl: comment.author.avatarUrl,
+    content: comment.text,
+    createdAt: formatRelativeTime(comment.createdAt),
+    isMine: Boolean(comment.isMine),
+  };
+}
+
 export function PostCard({
   postId,
   imageSrc,
   imageAlt = "Post image",
   liked = false,
   saved = false,
-  hasInitialComments = false,
   authorName = "Johndoe",
   authorAvatarUrl,
   caption = "",
@@ -62,16 +143,19 @@ export function PostCard({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [commentInput, setCommentInput] = useState("");
-  const [comments, setComments] = useState<CommentItem[]>(() =>
-    hasInitialComments ? [...DEFAULT_COMMENTS] : [],
-  );
-  const [nextCommentId, setNextCommentId] = useState(
-    hasInitialComments ? DEFAULT_COMMENTS.length + 1 : 1,
-  );
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
   const isMobile = useIsMobile();
-  const isPostDisabled = commentInput.trim().length === 0;
+  const commentsQuery = usePostCommentsQuery(postId, 1, 10, isCommentsOpen);
+  const createPostCommentMutation = useCreatePostCommentMutation();
+  const comments = useMemo<CommentItem[]>(
+    () => commentsQuery.data?.data.comments.map(mapCommentItem) ?? [],
+    [commentsQuery.data],
+  );
+  const isCreateCommentPending =
+    createPostCommentMutation.isPending &&
+    createPostCommentMutation.variables?.postId === postId;
+  const isPostDisabled = commentInput.trim().length === 0 || isCreateCommentPending;
   const normalizedCaption = caption.trim() || "-";
   const hasLongCaption = normalizedCaption.length > 140;
   const visibleCaption =
@@ -87,6 +171,13 @@ export function PostCard({
   const isSavePending =
     togglePostSaveMutation.isPending &&
     togglePostSaveMutation.variables?.postId === postId;
+  const commentsTotalCount = commentsQuery.data?.data.pagination.total ?? commentCount;
+  const commentsErrorMessage =
+    commentsQuery.error instanceof ApiError
+      ? commentsQuery.error.message
+      : commentsQuery.error instanceof Error
+        ? commentsQuery.error.message
+        : "Gagal memuat komentar";
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
@@ -125,22 +216,22 @@ export function PostCard({
   const handleSubmitComment = () => {
     const trimmedComment = commentInput.trim();
 
-    if (!trimmedComment) {
+    if (!trimmedComment || isCreateCommentPending) {
       return;
     }
 
-    setComments((prevComments) => [
-      ...prevComments,
+    createPostCommentMutation.mutate(
       {
-        id: nextCommentId,
-        name: "You",
-        content: trimmedComment,
-        createdAt: "Just now",
+        postId,
+        text: trimmedComment,
       },
-    ]);
-    setNextCommentId((value) => value + 1);
-    setCommentInput("");
-    setIsEmojiPickerOpen(false);
+      {
+        onSuccess: () => {
+          setCommentInput("");
+          setIsEmojiPickerOpen(false);
+        },
+      },
+    );
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
@@ -175,7 +266,7 @@ export function PostCard({
     };
   }, [isEmojiPickerOpen]);
 
-  const commentsContent = comments.length === 0 && (
+  const commentsContent = (
     <div className="flex min-h-[220px] flex-1 flex-col items-center justify-center text-center">
       <h3 className="text-[24px] leading-[28px] font-bold text-[var(--base-pure-white)]">
         No Comments yet
@@ -183,6 +274,28 @@ export function PostCard({
       <p className="mt-1 text-[14px] leading-[20px] text-[var(--neutral-500)]">
         Start the conversation
       </p>
+    </div>
+  );
+  const commentsListContent = commentsQuery.isLoading ? (
+    <CommentsListSkeleton />
+  ) : commentsQuery.error ? (
+    <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
+      <p className="text-sm text-[var(--red)]">{commentsErrorMessage}</p>
+      <Button
+        type="button"
+        onClick={() => commentsQuery.refetch()}
+        className="h-9 w-fit rounded-full bg-primary-300 px-4 text-sm font-bold text-white hover:bg-primary-200"
+      >
+        Coba lagi
+      </Button>
+    </div>
+  ) : comments.length === 0 ? (
+    commentsContent
+  ) : (
+    <div className="grid gap-4 pr-1">
+      {comments.map((comment) => (
+        <CommentRow key={comment.id} item={comment} />
+      ))}
     </div>
   );
 
@@ -245,7 +358,7 @@ export function PostCard({
             </div>
             <ActionButton
               label="Open comments"
-              count={commentCount}
+              count={commentsTotalCount}
               onClick={handleOpenComments}
               icon={<IoChatbubbleOutline className="size-6" />}
             />
@@ -351,16 +464,60 @@ export function PostCard({
                 Comments
               </h2>
 
-              <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto">
-                {comments.length === 0 ? (
-                  commentsContent
-                ) : (
-                  <div className="grid gap-4 pr-1">
-                    {comments.map((comment) => (
-                      <CommentRow key={comment.id} item={comment} />
-                    ))}
+              <div className="mt-3 flex items-center justify-between border-y border-y-[rgba(126,145,183,0.2)] py-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={liked ? "Unlike post" : "Like post"}
+                      onClick={handleToggleLike}
+                      disabled={isLikePending}
+                      className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                    >
+                      {liked ? (
+                        <IoHeart className="size-6 text-red" />
+                      ) : (
+                        <IoHeartOutline className="size-6" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-label="Open likes list"
+                      onClick={() => setIsLikesOpen(true)}
+                      className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
+                    >
+                      {likeCount}
+                    </Button>
                   </div>
-                )}
+                  <ModalActionStat
+                    label="Total comments"
+                    count={commentsTotalCount}
+                    icon={<IoChatbubbleOutline className="size-5" />}
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={saved ? "Unsave post" : "Save post"}
+                  onClick={handleToggleSave}
+                  disabled={isSavePending}
+                  className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                >
+                  {saved ? (
+                    <IoBookmark className="size-6" />
+                  ) : (
+                    <IoBookmarkOutline className="size-6" />
+                  )}
+                </Button>
+              </div>
+
+              <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto">
+                {commentsListContent}
               </div>
 
               <div className="relative mt-4">
@@ -424,7 +581,7 @@ export function PostCard({
                           : "text-[var(--primary-200)] hover:text-[var(--primary-200)]",
                       )}
                     >
-                      Post
+                      {isCreateCommentPending ? "Posting..." : "Post"}
                     </Button>
                   </div>
                 </div>
@@ -503,15 +660,7 @@ export function PostCard({
                       </h2>
 
                       <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
-                        {comments.length === 0 ? (
-                          commentsContent
-                        ) : (
-                          <div className="grid gap-4 pr-1">
-                            {comments.map((comment) => (
-                              <CommentRow key={comment.id} item={comment} />
-                            ))}
-                          </div>
-                        )}
+                        {commentsListContent}
                       </div>
                     </div>
 
@@ -546,7 +695,7 @@ export function PostCard({
                           </div>
                           <ModalActionStat
                             label="Total comments"
-                            count={commentCount}
+                            count={commentsTotalCount}
                             icon={<IoChatbubbleOutline className="size-6" />}
                           />
                           <ModalActionStat
@@ -637,7 +786,7 @@ export function PostCard({
                                   : "text-primary-200 hover:text-primary-300",
                               )}
                             >
-                              Post
+                              {isCreateCommentPending ? "Posting..." : "Post"}
                             </Button>
                           </div>
                         </div>

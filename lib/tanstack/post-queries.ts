@@ -128,6 +128,40 @@ export type PostLikesSuccessResponse = {
   data: PostLikesData;
 };
 
+export type PostCommentAuthor = {
+  id: number;
+  username: string;
+  name: string;
+  avatarUrl: string | null;
+};
+
+export type PostCommentItem = {
+  id: number;
+  text: string;
+  createdAt: string;
+  author: PostCommentAuthor;
+  isMine?: boolean;
+};
+
+type PostCommentsData = {
+  comments: PostCommentItem[];
+  pagination: PostsPagination;
+};
+
+export type PostCommentsSuccessResponse = {
+  success: true;
+  message: string;
+  data: PostCommentsData;
+};
+
+type CreatePostCommentData = PostCommentItem;
+
+type CreatePostCommentSuccessResponse = {
+  success: true;
+  message: string;
+  data: CreatePostCommentData;
+};
+
 type TogglePostLikeData = {
   liked: boolean;
   likeCount: number;
@@ -196,6 +230,11 @@ type ToggleFollowVariables = {
   following: boolean;
 };
 
+type CreatePostCommentVariables = {
+  postId: number;
+  text: string;
+};
+
 type ToggleFollowContext = {
   previousPostLikesQueries: Array<[QueryKey, PostLikesInfiniteData | undefined]>;
   previousFollowingIdQueries: Array<[QueryKey, number[] | undefined]>;
@@ -213,6 +252,11 @@ type ToggleFollowMutationOptions = {
   showToast?: boolean;
 };
 
+type CreateCommentMutationOptions = {
+  showToast?: boolean;
+  invalidatePosts?: boolean;
+};
+
 type RequestApiInit = RequestInit & {
   cache?: RequestCache;
 };
@@ -223,6 +267,9 @@ export const postQueryKeys = {
   savedPostIds: (limit = 50) => ["posts", "saved", "ids", limit] as const,
   postLikesInfinite: (postId: number, limit = 20) =>
     ["posts", postId, "likes", "infinite", limit] as const,
+  postComments: (postId: number, page = 1, limit = 10) =>
+    ["posts", postId, "comments", page, limit] as const,
+  postCommentsList: (postId: number) => ["posts", postId, "comments"] as const,
   followingUserIds: (limit = 50) => ["me", "following", "ids", limit] as const,
 };
 
@@ -364,6 +411,22 @@ async function fetchPostLikes({
   );
 }
 
+async function fetchPostComments({
+  postId,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  postId: number;
+}): Promise<PostCommentsSuccessResponse> {
+  return requestApi<PostCommentsData>(
+    `/api/posts/${postId}/comments?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch post comments"
+  );
+}
+
 async function fetchAllLikedPostIds(limit: number): Promise<number[]> {
   const likedPostIds = new Set<number>();
   let currentPage = 1;
@@ -466,6 +529,25 @@ async function toggleFollow({
       method: following ? "DELETE" : "POST",
     },
     following ? "Failed to unfollow user" : "Failed to follow user"
+  );
+}
+
+async function createPostComment({
+  postId,
+  text,
+}: CreatePostCommentVariables): Promise<CreatePostCommentSuccessResponse> {
+  return requestApi<CreatePostCommentData>(
+    `/api/posts/${postId}/comments`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        text,
+      }),
+    },
+    "Failed to create comment"
   );
 }
 
@@ -615,6 +697,24 @@ export function usePostLikesInfiniteQuery(
 
       return page + 1;
     },
+    enabled: enabled && postId > 0,
+  });
+}
+
+export function usePostCommentsQuery(
+  postId: number,
+  page = 1,
+  limit = 10,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: postQueryKeys.postComments(postId, page, limit),
+    queryFn: () =>
+      fetchPostComments({
+        postId,
+        page,
+        limit,
+      }),
     enabled: enabled && postId > 0,
   });
 }
@@ -840,6 +940,46 @@ export function useTogglePostSaveMutation(
       });
     },
   });
+}
+
+export function useCreatePostCommentMutation(
+  options: CreateCommentMutationOptions = {}
+) {
+  const { showToast = false, invalidatePosts = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation<CreatePostCommentSuccessResponse, unknown, CreatePostCommentVariables>(
+    {
+      mutationKey: ["posts", "comments", "create"],
+      mutationFn: createPostComment,
+      onError: (error) => {
+        if (showToast) {
+          showErrorToast("Gagal menambahkan komentar", {
+            description: getErrorMessage(
+              error,
+              "Terjadi kesalahan saat menambahkan komentar."
+            ),
+          });
+        }
+      },
+      onSuccess: (result) => {
+        if (showToast) {
+          showSuccessToast(result.message);
+        }
+      },
+      onSettled: (_result, _error, variables) => {
+        queryClient.invalidateQueries({
+          queryKey: postQueryKeys.postCommentsList(variables.postId),
+        });
+
+        if (invalidatePosts) {
+          queryClient.invalidateQueries({
+            queryKey: ["posts", "infinite"],
+          });
+        }
+      },
+    }
+  );
 }
 
 export function useToggleFollowMutation(

@@ -217,7 +217,6 @@ export function HomeFeed() {
             imageAlt={post.caption || `Post by ${post.author.username}`}
             liked={post.likedByMe}
             saved={post.savedByMe}
-            hasInitialComments={false}
             authorName={post.author.name || post.author.username}
             authorAvatarUrl={post.author.avatarUrl}
             caption={post.caption}
