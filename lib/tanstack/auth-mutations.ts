@@ -2,15 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 
-export type RegisterPayload = {
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  password: string;
-};
-
-type RegisterUser = {
+type AuthUser = {
   id: number;
   name: string;
   username: string;
@@ -19,15 +11,34 @@ type RegisterUser = {
   avatarUrl: string | null;
 };
 
-type RegisterData = {
+type AuthData = {
   token: string;
-  user: RegisterUser;
+  user: AuthUser;
 };
 
-export type RegisterResponse = {
+type AuthResponse = {
   success: boolean;
   message: string;
-  data: RegisterData | null;
+  data: AuthData | null;
+};
+
+type AuthSuccessResponse = {
+  success: true;
+  message: string;
+  data: AuthData;
+};
+
+export type RegisterPayload = {
+  name: string;
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
 };
 
 export class ApiError extends Error {
@@ -43,13 +54,25 @@ export class ApiError extends Error {
 function buildApiError(
   responseStatus: number,
   fallbackMessage: string,
-  responseBody?: Partial<RegisterResponse>
+  responseBody?: Partial<AuthResponse> | null
 ) {
   return new ApiError(responseBody?.message ?? fallbackMessage, responseStatus);
 }
 
-export async function register(payload: RegisterPayload) {
-  const response = await fetch("/api/auth/register", {
+async function parseApiBody(response: Response): Promise<AuthResponse | null> {
+  try {
+    return (await response.json()) as AuthResponse;
+  } catch {
+    return null;
+  }
+}
+
+async function postAuth<TPayload>(
+  endpoint: string,
+  payload: TPayload,
+  fallbackMessage: string
+): Promise<AuthSuccessResponse> {
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -58,17 +81,36 @@ export async function register(payload: RegisterPayload) {
     body: JSON.stringify(payload),
   });
 
-  const body = (await response.json()) as RegisterResponse;
-  if (!response.ok || !body.success || !body.data) {
-    throw buildApiError(response.status, "Failed to register account", body);
+  const body = await parseApiBody(response);
+  if (!response.ok || !body?.success || !body.data) {
+    throw buildApiError(response.status, fallbackMessage, body);
   }
 
-  return body;
+  return {
+    success: true,
+    message: body.message,
+    data: body.data,
+  };
+}
+
+export async function register(payload: RegisterPayload) {
+  return postAuth("/api/auth/register", payload, "Failed to register account");
+}
+
+export async function login(payload: LoginPayload) {
+  return postAuth("/api/auth/login", payload, "Failed to login");
 }
 
 export function useRegisterMutation() {
   return useMutation({
     mutationKey: ["auth", "register"],
     mutationFn: register,
+  });
+}
+
+export function useLoginMutation() {
+  return useMutation({
+    mutationKey: ["auth", "login"],
+    mutationFn: login,
   });
 }

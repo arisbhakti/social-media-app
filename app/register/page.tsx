@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ const initialFormValues: RegisterFormValues = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const registerMutation = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -151,10 +153,6 @@ export default function RegisterPage() {
         password: formValues.password,
       });
 
-      if (!response.data) {
-        throw new Error(response.message || "Data registrasi tidak tersedia");
-      }
-
       showSuccessToast(response.message, {
         description: `Akun ${response.data.user.username} berhasil dibuat`,
       });
@@ -163,6 +161,7 @@ export default function RegisterPage() {
       setSubmitErrorMessage("");
       setShowPassword(false);
       setShowConfirmPassword(false);
+      router.push("/login");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Gagal melakukan registrasi";
