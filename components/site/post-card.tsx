@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 
@@ -154,6 +155,7 @@ export function PostCard({
   liked = false,
   saved = false,
   authorName = "Johndoe",
+  authorUsername = "",
   authorAvatarUrl,
   caption = "",
   createdAtLabel = "Just now",
@@ -167,6 +169,7 @@ export function PostCard({
   const [commentInput, setCommentInput] = useState("");
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
+  const router = useRouter();
   const isMobile = useIsMobile();
   const postDetailQuery = usePostDetailQuery(postId, isCommentsOpen);
   const modalPostDetail = postDetailQuery.data?.data;
@@ -180,6 +183,7 @@ export function PostCard({
     modalPostDetail?.author.name.trim() ||
     modalPostDetail?.author.username ||
     authorName;
+  const modalAuthorUsername = modalPostDetail?.author.username || authorUsername;
   const modalAuthorAvatarUrl = modalPostDetail?.author.avatarUrl ?? authorAvatarUrl;
   const modalCaption = modalPostDetail?.caption ?? caption;
   const modalCaptionText = modalCaption.trim() || "-";
@@ -231,6 +235,15 @@ export function PostCard({
 
   const handleOpenComments = () => {
     setIsCommentsOpen(true);
+  };
+
+  const handleOpenAuthorProfile = (username: string) => {
+    const normalizedUsername = username.trim();
+    if (!normalizedUsername) {
+      return;
+    }
+
+    router.push(`/profile/${encodeURIComponent(normalizedUsername)}`);
   };
 
   const handleToggleLike = (currentLiked: boolean) => {
@@ -353,19 +366,25 @@ export function PostCard({
     <>
       <Card className="gap-3 rounded-none border-0 bg-transparent py-0 text-white shadow-none">
         <div className="flex items-center gap-2 md:gap-3">
-          <Avatar className="size-11 md:size-16 border border-[rgba(126,145,183,0.32)]">
-            <AvatarImage
-              src={authorAvatarUrl ?? "/dummy-profile-image.png"}
-              alt={authorName}
-            />
-            <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
-          </Avatar>
-          <div className="grid gap-0">
-            <span className="text-sm md:text-md font-bold">{authorName}</span>
-            <span className="text-xs md:text-sm text-neutral-400">
-              {createdAtLabel}
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleOpenAuthorProfile(authorUsername)}
+            className="flex items-center gap-2 text-left transition-opacity hover:opacity-90 md:gap-3"
+          >
+            <Avatar className="size-11 border border-[rgba(126,145,183,0.32)] md:size-16">
+              <AvatarImage
+                src={authorAvatarUrl ?? "/dummy-profile-image.png"}
+                alt={authorName}
+              />
+              <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
+            </Avatar>
+            <div className="grid gap-0">
+              <span className="text-sm font-bold md:text-md">{authorName}</span>
+              <span className="text-xs text-neutral-400 md:text-sm">
+                {createdAtLabel}
+              </span>
+            </div>
+          </button>
         </div>
 
         <button
@@ -441,7 +460,13 @@ export function PostCard({
         </div>
 
         <div className="grid gap-0 md:gap-1">
-          <span className="text-sm md:text-md font-bold">{authorName}</span>
+          <button
+            type="button"
+            onClick={() => handleOpenAuthorProfile(authorUsername)}
+            className="w-fit text-left text-sm font-bold transition-opacity hover:opacity-90 md:text-md"
+          >
+            {authorName}
+          </button>
           <p className="text-sm md:text-md text-neutral-25">{visibleCaption}</p>
           {hasLongCaption ? (
             <Button
@@ -762,7 +787,13 @@ export function PostCard({
                       ) : (
                         <>
                           <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenAuthorProfile(modalAuthorUsername)
+                              }
+                              className="flex items-center gap-3 text-left transition-opacity hover:opacity-90"
+                            >
                               <Avatar className="size-10 ">
                                 <AvatarImage
                                   src={modalAuthorAvatarUrl ?? "/dummy-profile-image.png"}
@@ -778,7 +809,7 @@ export function PostCard({
                                   {modalCreatedAtLabel}
                                 </span>
                               </div>
-                            </div>
+                            </button>
 
                             <Button
                               type="button"

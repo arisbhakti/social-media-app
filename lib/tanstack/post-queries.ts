@@ -100,6 +100,32 @@ export type MyProfileSuccessResponse = {
   data: MyProfileData;
 };
 
+export type UserProfile = {
+  id: number;
+  name: string;
+  username: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  email: string;
+  phone: string;
+  counts: {
+    post: number;
+    followers: number;
+    following: number;
+    likes: number;
+  };
+  isFollowing: boolean;
+  isMe: boolean;
+};
+
+type UserProfileData = UserProfile;
+
+export type UserProfileSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserProfileData;
+};
+
 type LikedPostItem = PostItem & {
   likedAt: string;
 };
@@ -113,6 +139,28 @@ export type MyLikedPostsSuccessResponse = {
   success: true;
   message: string;
   data: MyLikedPostsData;
+};
+
+type UserPostsData = {
+  posts: PostItem[];
+  pagination: PostsPagination;
+};
+
+export type UserPostsSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserPostsData;
+};
+
+type UserLikedPostsData = {
+  posts: PostItem[];
+  pagination: PostsPagination;
+};
+
+export type UserLikedPostsSuccessResponse = {
+  success: true;
+  message: string;
+  data: UserLikedPostsData;
 };
 
 export type SavedPostItem = {
@@ -313,9 +361,11 @@ type CreatePostVariables = {
 type ToggleFollowContext = {
   hasValidPostId: boolean;
   optimisticFollowingDelta: number;
+  optimisticFollowersDelta: number;
   previousPostLikesQueries: Array<[QueryKey, PostLikesInfiniteData | undefined]>;
   previousFollowingIdQueries: Array<[QueryKey, number[] | undefined]>;
   previousProfileQueries: Array<[QueryKey, MyProfileSuccessResponse | undefined]>;
+  previousUserProfileQueries: Array<[QueryKey, UserProfileSuccessResponse | undefined]>;
   previousFollowingQueries: Array<[QueryKey, MyFollowingInfiniteData | undefined]>;
   previousFollowersQueries: Array<[QueryKey, MyFollowersInfiniteData | undefined]>;
 };
@@ -351,9 +401,15 @@ export const postQueryKeys = {
   likedPostIds: (limit = 50) => ["posts", "liked", "ids", limit] as const,
   savedPostIds: (limit = 50) => ["posts", "saved", "ids", limit] as const,
   meProfile: () => ["me", "profile"] as const,
+  userProfile: (username: string) =>
+    ["users", username.trim().toLowerCase(), "profile"] as const,
   myPostsInfinite: (limit = 9) => ["me", "posts", "infinite", limit] as const,
   mySavedPostsInfinite: (limit = 9) =>
     ["me", "saved", "infinite", limit] as const,
+  userPostsInfinite: (username: string, limit = 9) =>
+    ["users", username.trim().toLowerCase(), "posts", "infinite", limit] as const,
+  userLikesInfinite: (username: string, limit = 9) =>
+    ["users", username.trim().toLowerCase(), "likes", "infinite", limit] as const,
   myFollowingInfinite: (limit = 10) =>
     ["me", "following", "infinite", limit] as const,
   myFollowersInfinite: (limit = 10) =>
@@ -371,6 +427,8 @@ type PostsInfiniteData = InfiniteData<PostsSuccessResponse, number>;
 type MyFollowingInfiniteData = InfiniteData<MyFollowingSuccessResponse, number>;
 type MyFollowersInfiniteData = InfiniteData<MyFollowersSuccessResponse, number>;
 type PostLikesInfiniteData = InfiniteData<PostLikesSuccessResponse, number>;
+type UserPostsInfiniteData = InfiniteData<UserPostsSuccessResponse, number>;
+type UserLikesInfiniteData = InfiniteData<UserLikedPostsSuccessResponse, number>;
 
 export class ApiError extends Error {
   status: number;
@@ -462,6 +520,18 @@ async function fetchMyProfile(): Promise<MyProfileSuccessResponse> {
   );
 }
 
+async function fetchUserProfile(
+  username: string
+): Promise<UserProfileSuccessResponse> {
+  return requestApi<UserProfileData>(
+    `/api/users/${encodeURIComponent(username)}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch user profile"
+  );
+}
+
 async function fetchMyPosts({
   page,
   limit,
@@ -485,6 +555,38 @@ async function fetchMyLikedPosts({
       method: "GET",
     },
     "Failed to fetch liked posts"
+  );
+}
+
+async function fetchUserPosts({
+  username,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  username: string;
+}): Promise<UserPostsSuccessResponse> {
+  return requestApi<UserPostsData>(
+    `/api/users/${encodeURIComponent(username)}/posts?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch user posts"
+  );
+}
+
+async function fetchUserLikedPosts({
+  username,
+  page,
+  limit,
+}: FetchCollectionParams & {
+  username: string;
+}): Promise<UserLikedPostsSuccessResponse> {
+  return requestApi<UserLikedPostsData>(
+    `/api/users/${encodeURIComponent(username)}/likes?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+    },
+    "Failed to fetch user liked posts"
   );
 }
 
@@ -915,6 +1017,30 @@ function adjustFollowingCountInProfile(
   };
 }
 
+function adjustFollowersStateInUserProfile(
+  source: UserProfileSuccessResponse | undefined,
+  nextFollowingState: boolean,
+  delta: number
+) {
+  if (!source) {
+    return source;
+  }
+
+  return {
+    ...source,
+    data: {
+      ...source.data,
+      isFollowing: source.data.isMe ? source.data.isFollowing : nextFollowingState,
+      counts: {
+        ...source.data.counts,
+        followers: source.data.isMe
+          ? source.data.counts.followers
+          : Math.max(0, source.data.counts.followers + delta),
+      },
+    },
+  };
+}
+
 function updateIdsArray(
   source: number[] | undefined,
   itemId: number,
@@ -1012,6 +1138,16 @@ export function useMyProfileQuery(enabled = true) {
   });
 }
 
+export function useUserProfileQuery(username: string, enabled = true) {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  return useQuery({
+    queryKey: postQueryKeys.userProfile(normalizedUsername),
+    queryFn: () => fetchUserProfile(normalizedUsername),
+    enabled: enabled && normalizedUsername.length > 0,
+  });
+}
+
 export function useMyPostsInfiniteQuery(limit = 9, enabled = true) {
   return useInfiniteQuery({
     queryKey: postQueryKeys.myPostsInfinite(limit),
@@ -1051,6 +1187,62 @@ export function useMySavedPostsInfiniteQuery(limit = 9, enabled = true) {
       return page + 1;
     },
     enabled,
+  });
+}
+
+export function useUserPostsInfiniteQuery(
+  username: string,
+  limit = 9,
+  enabled = true
+) {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.userPostsInfinite(normalizedUsername, limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchUserPosts({
+        username: normalizedUsername,
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled: enabled && normalizedUsername.length > 0,
+  });
+}
+
+export function useUserLikedPostsInfiniteQuery(
+  username: string,
+  limit = 9,
+  enabled = true
+) {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  return useInfiniteQuery({
+    queryKey: postQueryKeys.userLikesInfinite(normalizedUsername, limit),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      fetchUserLikedPosts({
+        username: normalizedUsername,
+        page: pageParam,
+        limit,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.data.pagination;
+      if (page >= totalPages) {
+        return undefined;
+      }
+
+      return page + 1;
+    },
+    enabled: enabled && normalizedUsername.length > 0,
   });
 }
 
@@ -1596,6 +1788,7 @@ export function useToggleFollowMutation(
         typeof variables.postId === "number" && variables.postId > 0;
       const optimisticFollowingState = !variables.following;
       const optimisticFollowingDelta = variables.following ? -1 : 1;
+      const optimisticFollowersDelta = variables.following ? -1 : 1;
 
       const cancelQueriesTasks = [
         queryClient.cancelQueries({
@@ -1603,6 +1796,9 @@ export function useToggleFollowMutation(
         }),
         queryClient.cancelQueries({
           queryKey: postQueryKeys.meProfile(),
+        }),
+        queryClient.cancelQueries({
+          queryKey: postQueryKeys.userProfile(variables.username),
         }),
         queryClient.cancelQueries({
           queryKey: ["me", "following", "infinite"],
@@ -1634,6 +1830,10 @@ export function useToggleFollowMutation(
         queryClient.getQueriesData<MyProfileSuccessResponse>({
           queryKey: postQueryKeys.meProfile(),
         });
+      const previousUserProfileQueries =
+        queryClient.getQueriesData<UserProfileSuccessResponse>({
+          queryKey: postQueryKeys.userProfile(variables.username),
+        });
       const previousFollowingQueries =
         queryClient.getQueriesData<MyFollowingInfiniteData>({
           queryKey: ["me", "following", "infinite"],
@@ -1663,6 +1863,16 @@ export function useToggleFollowMutation(
       previousProfileQueries.forEach(([queryKey]) => {
         queryClient.setQueryData<MyProfileSuccessResponse>(queryKey, (oldData) =>
           adjustFollowingCountInProfile(oldData, optimisticFollowingDelta)
+        );
+      });
+
+      previousUserProfileQueries.forEach(([queryKey]) => {
+        queryClient.setQueryData<UserProfileSuccessResponse>(queryKey, (oldData) =>
+          adjustFollowersStateInUserProfile(
+            oldData,
+            optimisticFollowingState,
+            optimisticFollowersDelta
+          )
         );
       });
 
@@ -1700,9 +1910,11 @@ export function useToggleFollowMutation(
       return {
         hasValidPostId,
         optimisticFollowingDelta,
+        optimisticFollowersDelta,
         previousPostLikesQueries,
         previousFollowingIdQueries,
         previousProfileQueries,
+        previousUserProfileQueries,
         previousFollowingQueries,
         previousFollowersQueries,
       };
@@ -1715,6 +1927,9 @@ export function useToggleFollowMutation(
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousProfileQueries.forEach(([queryKey, oldData]) => {
+        queryClient.setQueryData(queryKey, oldData);
+      });
+      context?.previousUserProfileQueries.forEach(([queryKey, oldData]) => {
         queryClient.setQueryData(queryKey, oldData);
       });
       context?.previousFollowingQueries.forEach(([queryKey, oldData]) => {
@@ -1804,6 +2019,8 @@ export function useToggleFollowMutation(
         variables.following === isNowFollowing ? 0 : isNowFollowing ? 1 : -1;
       const correctionDelta =
         actualFollowingDelta - (context?.optimisticFollowingDelta ?? 0);
+      const followersCorrectionDelta =
+        actualFollowingDelta - (context?.optimisticFollowersDelta ?? 0);
 
       if (correctionDelta !== 0) {
         queryClient
@@ -1818,6 +2035,22 @@ export function useToggleFollowMutation(
             );
           });
       }
+
+      queryClient
+        .getQueriesData<UserProfileSuccessResponse>({
+          queryKey: postQueryKeys.userProfile(variables.username),
+        })
+        .forEach(([queryKey]) => {
+          queryClient.setQueryData<UserProfileSuccessResponse>(
+            queryKey,
+            (oldData) =>
+              adjustFollowersStateInUserProfile(
+                oldData,
+                isNowFollowing,
+                followersCorrectionDelta
+              )
+          );
+        });
 
       if (showToast) {
         showSuccessToast(result.message);
@@ -1835,6 +2068,9 @@ export function useToggleFollowMutation(
       });
       queryClient.invalidateQueries({
         queryKey: postQueryKeys.meProfile(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.userProfile(variables.username),
       });
       queryClient.invalidateQueries({
         queryKey: ["me", "following", "infinite"],

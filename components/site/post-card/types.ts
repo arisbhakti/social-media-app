@@ -5,6 +5,7 @@ export type PostCardProps = {
   liked?: boolean;
   saved?: boolean;
   authorName?: string;
+  authorUsername?: string;
   authorAvatarUrl?: string | null;
   caption?: string;
   createdAtLabel?: string;

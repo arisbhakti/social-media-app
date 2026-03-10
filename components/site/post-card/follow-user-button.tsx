@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 
 type FollowUserButtonProps = {
   following: boolean;
+  notFollowingLabel?: "Follow" | "Follow Back";
   disabled?: boolean;
   onToggle?: () => void;
 };
 
 export function FollowUserButton({
   following,
+  notFollowingLabel = "Follow",
   disabled = false,
   onToggle,
 }: FollowUserButtonProps) {
@@ -41,7 +43,7 @@ export function FollowUserButton({
       className="h-10 rounded-full bg-primary-300 px-7 text-sm font-bold disabled:opacity-75"
     >
       {disabled ? <LoaderCircle className="size-4 animate-spin" /> : null}
-      Follow
+      {notFollowingLabel}
     </Button>
   );
 }

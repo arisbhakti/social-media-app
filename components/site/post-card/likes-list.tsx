@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef } from "react";
 
 import {
   ApiError,
-  useMyFollowingUserIdsQuery,
   usePostLikesInfiniteQuery,
   useToggleFollowMutation,
 } from "@/lib/tanstack/post-queries";
@@ -52,28 +51,11 @@ export function LikesList({ postId }: LikesListProps) {
     isFetchingNextPage,
     refetch,
   } = usePostLikesInfiniteQuery(postId, 20, Boolean(postId));
-  const { data: followingUserIds } = useMyFollowingUserIdsQuery(
-    50,
-    Boolean(postId),
-  );
   const toggleFollowMutation = useToggleFollowMutation();
 
-  const followingUserIdsSet = useMemo(
-    () => new Set(followingUserIds ?? []),
-    [followingUserIds],
-  );
-
   const users = useMemo(
-    () =>
-      data?.pages.flatMap((page) =>
-        page.data.users.map((user) => ({
-          ...user,
-          isFollowedByMe: followingUserIds
-            ? followingUserIdsSet.has(user.id)
-            : user.isFollowedByMe,
-        })),
-      ) ?? [],
-    [data, followingUserIds, followingUserIdsSet],
+    () => data?.pages.flatMap((page) => page.data.users) ?? [],
+    [data],
   );
 
   const isFollowPending = toggleFollowMutation.isPending;
@@ -196,6 +178,11 @@ export function LikesList({ postId }: LikesListProps) {
                 {user.isMe ? null : (
                   <FollowUserButton
                     following={user.isFollowedByMe}
+                    notFollowingLabel={
+                      !user.isFollowedByMe && user.followsMe
+                        ? "Follow Back"
+                        : "Follow"
+                    }
                     disabled={isCurrentUserPending}
                     onToggle={() => {
                       if (isCurrentUserPending) {

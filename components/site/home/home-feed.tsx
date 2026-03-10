@@ -208,6 +208,7 @@ export function HomeFeed() {
             liked={post.likedByMe}
             saved={post.savedByMe}
             authorName={post.author.name || post.author.username}
+            authorUsername={post.author.username}
             authorAvatarUrl={post.author.avatarUrl}
             caption={post.caption}
             createdAtLabel={formatRelativeTime(post.createdAt)}
