@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,11 +33,16 @@ const initialFormValues: LoginFormValues = {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState<LoginFormValues>(
     initialFormValues
   );
+  const [isFieldUnlocked, setIsFieldUnlocked] = useState({
+    email: false,
+    password: false,
+  });
   const [formErrors, setFormErrors] = useState<LoginFormErrors>({});
   const [submitErrorMessage, setSubmitErrorMessage] = useState("");
   const [isShaking, setIsShaking] = useState(false);
@@ -71,6 +77,19 @@ export default function LoginPage() {
       const nextErrors = { ...previousErrors };
       delete nextErrors[field];
       return nextErrors;
+    });
+  }
+
+  function unlockField(field: keyof LoginFormValues) {
+    setIsFieldUnlocked((previousState) => {
+      if (previousState[field]) {
+        return previousState;
+      }
+
+      return {
+        ...previousState,
+        [field]: true,
+      };
     });
   }
 
@@ -119,6 +138,7 @@ export default function LoginPage() {
       });
       setFormErrors({});
       setSubmitErrorMessage("");
+      router.push("/home");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login gagal";
 
@@ -182,7 +202,12 @@ export default function LoginPage() {
             </h1>
           </header>
 
-          <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+          <form
+            className="grid gap-5"
+            onSubmit={handleSubmit}
+            noValidate
+            autoComplete="off"
+          >
             <div className="grid gap-0.5">
               <Label className="text-sm font-bold" htmlFor="email">
                 Email
@@ -191,11 +216,14 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  autoComplete="email"
+                  name="login-email-field"
+                  autoComplete="off"
                   placeholder="Enter your email"
                   className="text-md h-full w-full border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:font-semibold placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0"
                   value={formValues.email}
                   onChange={(event) => updateField("email", event.target.value)}
+                  onFocus={() => unlockField("email")}
+                  readOnly={!isFieldUnlocked.email}
                   aria-invalid={Boolean(formErrors.email)}
                   disabled={loginMutation.isPending}
                 />
@@ -211,11 +239,14 @@ export default function LoginPage() {
                 <InputGroupInput
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  name="login-password-field"
+                  autoComplete="new-password"
                   placeholder="Enter your password"
                   className="text-md h-full w-full p-0 text-white placeholder:font-semibold placeholder:text-neutral-600 focus-visible:border-transparent focus-visible:ring-0"
                   value={formValues.password}
                   onChange={(event) => updateField("password", event.target.value)}
+                  onFocus={() => unlockField("password")}
+                  readOnly={!isFieldUnlocked.password}
                   aria-invalid={Boolean(formErrors.password)}
                   disabled={loginMutation.isPending}
                 />
