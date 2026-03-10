@@ -234,6 +234,35 @@ body {
   }
 }
 
+@keyframes shake-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-8px);
+  }
+
+  40% {
+    transform: translateX(8px);
+  }
+
+  60% {
+    transform: translateX(-6px);
+  }
+
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+@layer utilities {
+  .animate-shake-x {
+    animation: shake-x 0.38s ease-in-out;
+  }
+}
+
 .dark {
   --base-white: #000000;
   --base-pure-white: #ffffff;
