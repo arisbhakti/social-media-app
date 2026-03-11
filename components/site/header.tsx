@@ -27,7 +27,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { clearAuthSession, getAuthSession } from "@/lib/auth-session";
+import { clearAuthSession } from "@/lib/auth-session";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { clearAuthState } from "@/lib/redux/slices/auth-slice";
 import {
   ApiError,
   useToggleFollowMutation,
@@ -121,6 +123,9 @@ function GuestActionButtons({
 }
 
 export function Header() {
+  const dispatch = useAppDispatch();
+  const authUser = useAppSelector((state) => state.auth.user);
+  const isLoggedIn = useAppSelector((state) => Boolean(state.auth.token));
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -135,10 +140,9 @@ export function Header() {
   const isMobileSearchContextRoute =
     pathname === "/home" || pathname === "/search";
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [displayName, setDisplayName] = useState("John Doe");
-  const [username, setUsername] = useState("johndoe");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const displayName = authUser?.name || authUser?.username || "John Doe";
+  const username = authUser?.username || "johndoe";
+  const avatarUrl = authUser?.avatarUrl ?? null;
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
 
   const [desktopSearchInput, setDesktopSearchInput] = useState("");
@@ -148,33 +152,6 @@ export function Header() {
 
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [mobileSearchInput, setMobileSearchInput] = useState("");
-
-  useEffect(() => {
-    const syncAuthSession = () => {
-      const session = getAuthSession();
-      if (!session?.token) {
-        setIsLoggedIn(false);
-        setDisplayName("John Doe");
-        setUsername("johndoe");
-        setAvatarUrl(null);
-        return;
-      }
-
-      setIsLoggedIn(true);
-      setDisplayName(
-        session.user?.name || session.user?.username || "John Doe",
-      );
-      setUsername(session.user?.username || "johndoe");
-      setAvatarUrl(session.user?.avatarUrl ?? null);
-    };
-
-    syncAuthSession();
-    window.addEventListener("storage", syncAuthSession);
-
-    return () => {
-      window.removeEventListener("storage", syncAuthSession);
-    };
-  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -379,18 +356,14 @@ export function Header() {
 
   const handleLogout = () => {
     clearAuthSession();
+    dispatch(clearAuthState());
     queryClient.clear();
-    setIsLoggedIn(false);
-    setDisplayName("John Doe");
-    setUsername("johndoe");
-    setAvatarUrl(null);
     setDesktopSearchInput("");
     setDesktopSearchQuery("");
     setIsDesktopSearchFocused(false);
     setIsMobileSearchOpen(false);
     setMobileSearchInput("");
     setIsMobileGuestMenuOpen(false);
-    window.dispatchEvent(new Event("storage"));
     router.replace("/login");
   };
 

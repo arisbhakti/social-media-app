@@ -2,6 +2,7 @@
 
 const AUTH_TOKEN_KEY = "sociality_token";
 const AUTH_USER_KEY = "sociality_user";
+export const AUTH_SESSION_EVENT_NAME = "sociality:auth-session-updated";
 
 export type AuthSessionUser = {
   id: number;
@@ -17,7 +18,23 @@ export type AuthSession = {
   user: AuthSessionUser | null;
 };
 
+function canUseStorage() {
+  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
+function notifyAuthSessionUpdate() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event(AUTH_SESSION_EVENT_NAME));
+}
+
 export function saveAuthSession(token: string, user: AuthSessionUser | null) {
+  if (!canUseStorage()) {
+    return;
+  }
+
   localStorage.setItem(AUTH_TOKEN_KEY, token);
 
   if (user) {
@@ -25,14 +42,25 @@ export function saveAuthSession(token: string, user: AuthSessionUser | null) {
   } else {
     localStorage.removeItem(AUTH_USER_KEY);
   }
+
+  notifyAuthSessionUpdate();
 }
 
 export function clearAuthSession() {
+  if (!canUseStorage()) {
+    return;
+  }
+
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
+  notifyAuthSessionUpdate();
 }
 
 export function getAuthSession(): AuthSession | null {
+  if (!canUseStorage()) {
+    return null;
+  }
+
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) {
     return null;

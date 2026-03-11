@@ -18,6 +18,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
 import { saveAuthSession } from "@/lib/auth-session";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { setAuthSession } from "@/lib/redux/slices/auth-slice";
 import { useLoginMutation } from "@/lib/tanstack/auth-mutations";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,7 @@ const initialFormValues: LoginFormValues = {
 };
 
 export default function LoginPage() {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -136,6 +139,12 @@ export default function LoginPage() {
       });
 
       saveAuthSession(response.data.token, response.data.user);
+      dispatch(
+        setAuthSession({
+          token: response.data.token,
+          user: response.data.user,
+        }),
+      );
       showSuccessToast(response.message, {
         description: `Selamat datang, ${response.data.user.username}`,
       });

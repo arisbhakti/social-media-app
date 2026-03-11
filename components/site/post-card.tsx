@@ -42,6 +42,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
+import { useAppSelector } from "@/lib/redux/hooks";
 import {
   ApiError,
   type PostCommentItem,
@@ -53,7 +54,6 @@ import {
   useTogglePostLikeMutation,
   useTogglePostSaveMutation,
 } from "@/lib/tanstack/post-queries";
-import { getAuthSession } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 
 const EmojiPicker = dynamic(
@@ -193,13 +193,7 @@ export function PostCard({
     null
   );
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
-  const viewerUserId = useMemo(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    return getAuthSession()?.user?.id ?? null;
-  }, []);
+  const viewerUserId = useAppSelector((state) => state.auth.user?.id ?? null);
   const [commentInput, setCommentInput] = useState("");
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);

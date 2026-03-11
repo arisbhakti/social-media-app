@@ -17,7 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
-import { getAuthSession, saveAuthSession } from "@/lib/auth-session";
+import { saveAuthSession } from "@/lib/auth-session";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { setAuthSession } from "@/lib/redux/slices/auth-slice";
 
 type ProfileFormData = {
   name: string;
@@ -222,6 +224,8 @@ async function updateMyProfile(token: string | null, formData: FormData) {
 }
 
 export default function EditProfilePage() {
+  const dispatch = useAppDispatch();
+  const token = useAppSelector((state) => state.auth.token);
   const router = useRouter();
   const [formData, setFormData] = useState<ProfileFormData>(INITIAL_FORM_DATA);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -248,8 +252,6 @@ export default function EditProfilePage() {
     let isCancelled = false;
 
     const loadProfile = async () => {
-      const token = getAuthSession()?.token ?? null;
-
       setIsLoadingProfile(true);
 
       try {
@@ -288,7 +290,7 @@ export default function EditProfilePage() {
     return () => {
       isCancelled = true;
     };
-  }, [router]);
+  }, [router, token]);
 
   const updateField =
     (field: keyof ProfileFormData) =>
@@ -339,8 +341,6 @@ export default function EditProfilePage() {
       return;
     }
 
-    const token = getAuthSession()?.token ?? null;
-
     const name = formData.name.trim();
     const username = formData.username.trim();
     const email = formData.email.trim();
@@ -374,15 +374,22 @@ export default function EditProfilePage() {
       setAvatarUrl(profile.avatarUrl ?? null);
 
       if (token) {
-        saveAuthSession(token, {
+        const nextAuthUser = {
           id: profile.id,
           name: profile.name,
           username: profile.username,
           email: profile.email,
           phone: profile.phone,
           avatarUrl: profile.avatarUrl,
-        });
-        window.dispatchEvent(new Event("storage"));
+        };
+
+        saveAuthSession(token, nextAuthUser);
+        dispatch(
+          setAuthSession({
+            token,
+            user: nextAuthUser,
+          }),
+        );
       }
 
       showSuccessToast(response.message);
