@@ -314,6 +314,12 @@ export function Header() {
       .slice(0, 2)
       .map((word) => word[0]?.toUpperCase() ?? "")
       .join("") || "U";
+  const brandLinkClassName =
+    "group relative -mx-2 inline-flex items-center gap-3 rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:text-[var(--primary-300)] hover:drop-shadow-[0_12px_24px_rgba(105,54,242,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,54,242,0.45)]";
+  const brandIconClassName =
+    "transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-6";
+  const brandTextClassName =
+    "display-xs leading-none font-bold transition-colors duration-300 ease-out group-hover:text-[var(--primary-300)]";
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -431,18 +437,16 @@ export function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
       <div className="hidden h-20 items-center justify-between px-30 py-0 md:flex">
-        <Link
-          href="/home"
-          className="flex items-center gap-3 transition-opacity hover:opacity-90"
-        >
+        <Link href="/home" className={brandLinkClassName}>
           <Image
             src="/icon-sociality.svg"
             alt="Sociality icon"
             width={30}
             height={30}
             priority
+            className={brandIconClassName}
           />
-          <span className="display-xs leading-none font-bold">Sociality</span>
+          <span className={brandTextClassName}>Sociality</span>
         </Link>
 
         <div
@@ -655,20 +659,16 @@ export function Header() {
           </div>
         ) : (
           <>
-            <Link
-              href="/home"
-              className="flex items-center gap-3 transition-opacity hover:opacity-90"
-            >
+            <Link href="/home" className={brandLinkClassName}>
               <Image
                 src="/icon-sociality.svg"
                 alt="Sociality icon"
                 width={30}
                 height={30}
                 priority
+                className={brandIconClassName}
               />
-              <span className="display-xs leading-none font-bold">
-                Sociality
-              </span>
+              <span className={brandTextClassName}>Sociality</span>
             </Link>
 
             <div className="flex items-center gap-4">

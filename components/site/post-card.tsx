@@ -449,10 +449,10 @@ export function PostCard({
       type="button"
       onClick={handleOpenComments}
       className={cn(
-        "w-full overflow-hidden transition-opacity hover:opacity-95",
+        "group relative w-full overflow-hidden transition-[box-shadow] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,54,242,0.42)]",
         thumbnailOnly
-          ? `relative aspect-square rounded-[2.67px] md:rounded-[6px] ${thumbnailClassName ?? ""}`
-          : "rounded-xl",
+          ? `aspect-square rounded-[2.67px] hover:shadow-[0_12px_26px_rgba(105,54,242,0.25)] md:rounded-[6px] ${thumbnailClassName ?? ""}`
+          : "rounded-xl hover:shadow-[0_18px_36px_rgba(105,54,242,0.22)]",
       )}
       aria-label={thumbnailOnly ? "Open post detail" : "Open comments"}
     >
@@ -462,8 +462,17 @@ export function PostCard({
         width={1000}
         height={1000}
         className={cn(
-          "aspect-square w-full object-cover",
+          "aspect-square w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]",
           thumbnailOnly ? "h-full rounded-[2.67px] md:rounded-[6px]" : "md:h-150",
+        )}
+      />
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100",
+          thumbnailOnly
+            ? "bg-[radial-gradient(circle_at_50%_22%,rgba(127,81,249,0.28),rgba(0,0,0,0.4)_68%)] shadow-[inset_0_0_0_1px_rgba(127,81,249,0.65)]"
+            : "bg-[linear-gradient(180deg,rgba(127,81,249,0.1)_0%,rgba(0,0,0,0.28)_100%)]",
         )}
       />
     </button>
