@@ -66,8 +66,10 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   const authorization = request.headers.get("authorization");
-  if (!authorization) {
-    return toApiError("Unauthorized", 401);
+  const headers = new Headers();
+  headers.set("accept", "*/*");
+  if (authorization) {
+    headers.set("authorization", authorization);
   }
 
   const { username: rawUsername } = await context.params;
@@ -85,10 +87,7 @@ export async function GET(request: Request, context: RouteContext) {
       `${baseApiUrl.replace(/\/+$/, "")}/api/users/${encodeURIComponent(username)}/likes?page=${page}&limit=${limit}`,
       {
         method: "GET",
-        headers: {
-          accept: "*/*",
-          authorization,
-        },
+        headers,
         cache: "no-store",
       }
     );

@@ -621,6 +621,8 @@ async function fetchPosts({
     },
     "Failed to fetch posts",
     {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
       requireAuth: false,
     }
   );
@@ -644,7 +646,12 @@ async function fetchUserProfile(
     {
       method: "GET",
     },
-    "Failed to fetch user profile"
+    "Failed to fetch user profile",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -686,7 +693,12 @@ async function fetchUserPosts({
     {
       method: "GET",
     },
-    "Failed to fetch user posts"
+    "Failed to fetch user posts",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -702,7 +714,12 @@ async function fetchUserLikedPosts({
     {
       method: "GET",
     },
-    "Failed to fetch user liked posts"
+    "Failed to fetch user liked posts",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -757,7 +774,12 @@ async function fetchUserFollowing({
     {
       method: "GET",
     },
-    "Failed to fetch user following"
+    "Failed to fetch user following",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -773,7 +795,12 @@ async function fetchUserFollowers({
     {
       method: "GET",
     },
-    "Failed to fetch user followers"
+    "Failed to fetch user followers",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -810,7 +837,12 @@ async function fetchPostLikes({
     {
       method: "GET",
     },
-    "Failed to fetch users who liked this post"
+    "Failed to fetch users who liked this post",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -820,7 +852,12 @@ async function fetchPostDetail(postId: number): Promise<PostDetailSuccessRespons
     {
       method: "GET",
     },
-    "Failed to fetch post detail"
+    "Failed to fetch post detail",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
@@ -836,7 +873,12 @@ async function fetchPostComments({
     {
       method: "GET",
     },
-    "Failed to fetch post comments"
+    "Failed to fetch post comments",
+    {
+      includeAuthWhenAvailable: true,
+      redirectOnUnauthorized: false,
+      requireAuth: false,
+    }
   );
 }
 
