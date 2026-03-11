@@ -189,19 +189,23 @@ export default function RegisterPage() {
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,var(--base-pure-black)_0%,var(--base-pure-black)_64%,rgba(0,0,0,0.98)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_58%,rgba(2,1,8,0.99)_72%,rgba(12,5,33,0.98)_100%)]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-66vh] left-1/2 h-[126vh] w-[170vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(98%_92%_at_50%_8%,rgba(5,3,14,0.98)_0%,rgba(14,6,36,0.96)_24%,rgba(31,13,74,0.92)_44%,rgba(50,23,112,0.88)_58%,rgba(73,36,157,0.86)_70%,rgba(95,49,214,0.84)_82%,rgba(118,72,246,0.82)_92%,rgba(127,81,249,0.8)_100%)] blur-[34px]"
+        className="pointer-events-none absolute bottom-[-74vh] left-1/2 h-[150vh] w-[196vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(92%_90%_at_50%_8%,rgba(4,2,14,0.99)_0%,rgba(16,8,44,0.97)_28%,rgba(37,19,92,0.95)_48%,rgba(62,33,141,0.93)_64%,rgba(90,52,196,0.92)_78%,rgba(122,77,248,0.91)_90%,rgba(141,100,255,0.9)_100%)] blur-[18px] md:bottom-[-78vh] md:h-[156vh] md:w-[176vw]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-44vh] left-1/2 h-[98vh] w-[146vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(74%_62%_at_50%_100%,rgba(127,81,249,0.8)_0%,rgba(127,81,249,0.6)_34%,rgba(127,81,249,0.36)_58%,rgba(127,81,249,0.16)_78%,rgba(127,81,249,0)_100%)] blur-[58px]"
+        className="pointer-events-none absolute bottom-[-53vh] left-1/2 h-[118vh] w-[164vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(70%_62%_at_50%_100%,rgba(164,120,255,0.88)_0%,rgba(132,86,249,0.72)_32%,rgba(101,57,220,0.5)_56%,rgba(62,33,154,0.22)_80%,rgba(42,20,109,0)_100%)] blur-[64px] md:bottom-[-47vh] md:h-[108vh] md:w-[148vw]"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[19vh] left-1/2 h-[62vh] w-[132vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(76%_76%_at_50%_46%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.92)_34%,rgba(0,0,0,0.3)_68%,rgba(0,0,0,0)_100%)] blur-[30px]"
+        className="pointer-events-none absolute bottom-[-9vh] left-1/2 h-[56vh] w-[132vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(62%_58%_at_50%_100%,rgba(162,110,255,0.66)_0%,rgba(130,80,246,0.42)_44%,rgba(97,53,206,0.2)_68%,rgba(59,30,141,0)_100%)] blur-[52px] md:bottom-[-14vh] md:h-[50vh] md:w-[112vw]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[16vh] left-1/2 h-[66vh] w-[138vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(78%_82%_at_50%_42%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.9)_36%,rgba(0,0,0,0.38)_66%,rgba(0,0,0,0)_100%)] blur-[24px] md:bottom-[20vh] md:h-[60vh] md:w-[124vw]"
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">
