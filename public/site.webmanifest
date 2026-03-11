@@ -1,0 +1,16 @@
+{
+  "name": "Sociality",
+  "short_name": "Sociality",
+  "description": "Tempat untuk berbagi momen, menemukan inspirasi, dan terhubung dengan komunitasmu.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#6936f2",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

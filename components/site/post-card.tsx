@@ -25,6 +25,16 @@ import type {
   CommentItem,
   PostCardProps,
 } from "@/components/site/post-card/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -168,6 +178,7 @@ export function PostCard({
   const [isLikesOpen, setIsLikesOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
   const [viewerUserId, setViewerUserId] = useState<number | null>(null);
   const [commentInput, setCommentInput] = useState("");
@@ -329,6 +340,7 @@ export function PostCard({
 
     if (!open) {
       setIsEmojiPickerOpen(false);
+      setIsDeleteAlertOpen(false);
     }
   };
 
@@ -357,15 +369,16 @@ export function PostCard({
     setCommentInput((prevValue) => `${prevValue}${emojiData.emoji}`);
   };
 
-  const handleDeletePost = () => {
+  const handleDeletePostRequest = () => {
     if (!canDeletePost || isDeletePending) {
       return;
     }
 
-    const shouldDelete = window.confirm(
-      "Apakah kamu yakin ingin menghapus post ini?\nPilih OK untuk Ya, atau Cancel untuk Tidak."
-    );
-    if (!shouldDelete) {
+    setIsDeleteAlertOpen(true);
+  };
+
+  const handleDeletePost = () => {
+    if (!canDeletePost || isDeletePending) {
       return;
     }
 
@@ -373,6 +386,7 @@ export function PostCard({
       { postId },
       {
         onSuccess: () => {
+          setIsDeleteAlertOpen(false);
           handleCommentsOpenChange(false);
           setIsLikesOpen(false);
         },
@@ -949,7 +963,7 @@ export function PostCard({
                                 variant="ghost"
                                 size="icon-sm"
                                 aria-label="Delete post"
-                                onClick={handleDeletePost}
+                                onClick={handleDeletePostRequest}
                                 disabled={isDeletePending}
                                 className="size-6 rounded-full p-0 hover:bg-transparent disabled:opacity-70"
                               >
@@ -1163,6 +1177,46 @@ export function PostCard({
           </DialogContent>
         </Dialog>
       )}
+
+      <AlertDialog
+        open={isDeleteAlertOpen}
+        onOpenChange={(open) => {
+          if (isDeletePending) {
+            return;
+          }
+
+          setIsDeleteAlertOpen(open);
+        }}
+      >
+        <AlertDialogContent className="max-w-[440px] rounded-[20px] border border-[rgba(126,145,183,0.24)] bg-neutral-950 p-5 text-[var(--base-pure-white)] shadow-[0_24px_52px_rgba(0,0,0,0.55)] md:p-6">
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle className="text-lg font-bold text-white md:text-xl">
+              Hapus post ini?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-neutral-400">
+              Post yang sudah dihapus tidak bisa dikembalikan lagi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 gap-3">
+            <AlertDialogCancel
+              disabled={isDeletePending}
+              className="mt-0 h-10 rounded-full border border-neutral-700 bg-transparent px-5 text-sm font-bold text-white hover:bg-neutral-900 hover:text-white"
+            >
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeletePending}
+              onClick={(event) => {
+                event.preventDefault();
+                handleDeletePost();
+              }}
+              className="h-10 rounded-full bg-[var(--red)] px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
+            >
+              {isDeletePending ? "Menghapus..." : "Ya, Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
