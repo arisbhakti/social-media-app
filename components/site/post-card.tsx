@@ -495,11 +495,11 @@ export function PostCard({
   }, [isEmojiPickerOpen]);
 
   const commentsContent = (
-    <div className="flex min-h-[220px] flex-1 flex-col items-center justify-center text-center">
-      <h3 className="text-[24px] leading-[28px] font-bold text-[var(--base-pure-white)]">
+    <div className="flex min-h-55 flex-1 flex-col items-center justify-center text-center">
+      <h3 className="text-[24px] leading-7 font-bold text-base-pure-white">
         No Comments yet
       </h3>
-      <p className="mt-1 text-[14px] leading-[20px] text-[var(--neutral-500)]">
+      <p className="mt-1 text-[14px] leading-5 text-neutral-500">
         Start the conversation
       </p>
     </div>
@@ -508,7 +508,7 @@ export function PostCard({
     <CommentsListSkeleton />
   ) : commentsQuery.error ? (
     <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-      <p className="text-sm text-[var(--red)]">{commentsErrorMessage}</p>
+      <p className="text-sm text-red">{commentsErrorMessage}</p>
       <Button
         type="button"
         onClick={() => commentsQuery.refetch()}
@@ -540,7 +540,7 @@ export function PostCard({
       type="button"
       onClick={handleOpenComments}
       className={cn(
-        "group relative w-full overflow-hidden transition-[box-shadow] duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,54,242,0.42)]",
+        "group relative w-full overflow-hidden transition-shadow duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,54,242,0.42)]",
         thumbnailOnly
           ? `aspect-square rounded-[2.67px] hover:shadow-[0_12px_26px_rgba(105,54,242,0.25)] md:rounded-[6px] ${thumbnailClassName ?? ""}`
           : "rounded-xl hover:shadow-[0_18px_36px_rgba(105,54,242,0.22)]",
@@ -611,7 +611,7 @@ export function PostCard({
                   aria-label={liked ? "Unlike post" : "Like post"}
                   onClick={() => handleToggleLike(liked)}
                   disabled={isLikePending}
-                  className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] disabled:opacity-70"
+                  className="size-6 rounded-none p-0 text-base-pure-white hover:bg-transparent hover:text-base-pure-white disabled:opacity-70"
                 >
                   {liked ? (
                     <IoHeart className="size-6 text-red" />
@@ -624,7 +624,7 @@ export function PostCard({
                   variant="ghost"
                   aria-label="Open likes list"
                   onClick={() => setIsLikesOpen(true)}
-                  className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)] md:text-md"
+                  className="h-auto rounded-none p-0 text-sm font-semibold text-base-pure-white hover:bg-transparent hover:text-base-pure-white md:text-md"
                 >
                   {modalLikeCount}
                 </Button>
@@ -665,7 +665,7 @@ export function PostCard({
               aria-label={saved ? "Unsave post" : "Save post"}
               onClick={() => handleToggleSave(saved)}
               disabled={isSavePending}
-              className="size-5 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+              className="size-5 rounded-none p-0 text-base-pure-white hover:bg-transparent"
             >
               {saved ? (
                 <IoBookmark className="size-6" />
@@ -709,7 +709,7 @@ export function PostCard({
                 size="icon-sm"
                 aria-label="Close likes list"
                 onClick={() => setIsLikesOpen(false)}
-                className="absolute -top-8 right-4 z-20 size-6 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute -top-8 right-4 z-20 size-6 rounded-full p-0 text-base-pure-white hover:bg-transparent"
               >
                 <IoClose className="size-6" />
               </Button>
@@ -722,7 +722,7 @@ export function PostCard({
         <Dialog open={isLikesOpen} onOpenChange={setIsLikesOpen}>
           <DialogContent
             showCloseButton={false}
-            className="w-[548px]! border-0 bg-neutral-950 p-0 text-neutral-25 "
+            className="w-137! border-0 bg-neutral-950 p-0 text-neutral-25 "
           >
             <DialogTitle className="sr-only">Likes</DialogTitle>
             <div className="relative">
@@ -743,7 +743,7 @@ export function PostCard({
 
       {isMobile ? (
         <Drawer open={isCommentsOpen} onOpenChange={handleCommentsOpenChange}>
-          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0 text-[var(--base-pure-white)]">
+          <DrawerContent className="[&>div:first-child]:hidden max-h-[72vh] border-t border-t-[rgba(126,145,183,0.2)] bg-neutral-950 p-0 text-base-pure-white">
             <DrawerTitle className="sr-only">Comments</DrawerTitle>
             <div className="relative flex min-h-0 flex-1 flex-col px-4 pt-4 pb-4">
               <Button
@@ -752,18 +752,18 @@ export function PostCard({
                 size="icon-sm"
                 aria-label="Close comments"
                 onClick={() => handleCommentsOpenChange(false)}
-                className="absolute -top-10 right-4 z-20 size-6 rounded-full p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                className="absolute -top-10 right-4 z-20 size-6 rounded-full p-0 text-base-pure-white hover:bg-transparent"
               >
                 <IoClose className="size-6" />
               </Button>
 
-              <h2 className="text-md font-bold text-[var(--base-pure-white)]">
+              <h2 className="text-md font-bold text-base-pure-white">
                 Comments
               </h2>
 
               {hasPostDetailError ? (
                 <div className="mt-3 grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-                  <p className="text-sm text-[var(--red)]">{postDetailErrorMessage}</p>
+                  <p className="text-sm text-red">{postDetailErrorMessage}</p>
                   <Button
                     type="button"
                     onClick={() => postDetailQuery.refetch()}
@@ -787,7 +787,7 @@ export function PostCard({
                         aria-label={modalLiked ? "Unlike post" : "Like post"}
                         onClick={() => handleToggleLike(modalLiked)}
                         disabled={isLikePending}
-                        className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                        className="size-6 rounded-none p-0 text-base-pure-white hover:bg-transparent disabled:opacity-70"
                       >
                         {modalLiked ? (
                           <IoHeart className="size-6 text-red" />
@@ -800,7 +800,7 @@ export function PostCard({
                         variant="ghost"
                         aria-label="Open likes list"
                         onClick={() => setIsLikesOpen(true)}
-                        className="h-auto rounded-none p-0 text-sm font-semibold text-[var(--base-pure-white)] hover:bg-transparent hover:text-[var(--base-pure-white)]"
+                        className="h-auto rounded-none p-0 text-sm font-semibold text-base-pure-white hover:bg-transparent hover:text-base-pure-white"
                       >
                         {modalLikeCount}
                       </Button>
@@ -827,7 +827,7 @@ export function PostCard({
                     aria-label={modalSaved ? "Unsave post" : "Save post"}
                     onClick={() => handleToggleSave(modalSaved)}
                     disabled={isSavePending}
-                    className="size-6 rounded-none p-0 text-[var(--base-pure-white)] hover:bg-transparent disabled:opacity-70"
+                    className="size-6 rounded-none p-0 text-base-pure-white hover:bg-transparent disabled:opacity-70"
                   >
                     {modalSaved ? (
                       <IoBookmark className="size-6" />
@@ -841,7 +841,7 @@ export function PostCard({
               <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto">
                 {hasPostDetailError ? (
                   <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-                    <p className="text-sm text-[var(--red)]">{postDetailErrorMessage}</p>
+                    <p className="text-sm text-red">{postDetailErrorMessage}</p>
                     <Button
                       type="button"
                       onClick={() => postDetailQuery.refetch()}
@@ -861,7 +861,7 @@ export function PostCard({
                 {isEmojiPickerOpen && !isPostDetailLoading && !hasPostDetailError ? (
                   <div
                     ref={emojiPickerRef}
-                    className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
+                    className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-2xl border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
                   >
                     <EmojiPicker
                       onEmojiClick={handleEmojiClick}
@@ -888,12 +888,12 @@ export function PostCard({
                       size="icon-sm"
                       aria-label="Add emoji"
                       onClick={() => setIsEmojiPickerOpen((value) => !value)}
-                      className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-[var(--base-pure-white)] hover:bg-transparent"
+                      className="size-12 rounded-[14px] border border-[rgba(126,145,183,0.2)] p-0 text-base-pure-white hover:bg-transparent"
                     >
                       <IoHappyOutline className="size-6" />
                     </Button>
 
-                    <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
+                    <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3 transition-[border-color,box-shadow] duration-200 focus-within:border-primary-200 focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                       <input
                         type="text"
                         aria-label="Add comment"
@@ -906,7 +906,7 @@ export function PostCard({
                             handleSubmitComment();
                           }
                         }}
-                        className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none focus-visible:border-transparent focus-visible:ring-0 placeholder:text-[var(--neutral-500)]"
+                        className="h-full min-w-0 flex-1 border-0 bg-transparent text-md text-base-pure-white outline-none focus-visible:border-transparent focus-visible:ring-0 placeholder:text-neutral-500"
                       />
 
                       <Button
@@ -915,10 +915,10 @@ export function PostCard({
                         onClick={handleSubmitComment}
                         disabled={isPostDisabled}
                         className={cn(
-                          "h-auto rounded-none p-0 text-[16px] leading-[20px] font-semibold hover:bg-transparent",
+                          "h-auto rounded-none p-0 text-md font-semibold hover:bg-transparent",
                           isPostDisabled
-                            ? "text-[var(--neutral-500)]"
-                            : "text-[var(--primary-200)] hover:text-[var(--primary-200)]",
+                            ? "text-neutral-500"
+                            : "text-primary-200 hover:text-primary-200",
                         )}
                       >
                         {isCreateCommentPending ? "Posting..." : "Post"}
@@ -956,7 +956,7 @@ export function PostCard({
                     ) : hasPostDetailError ? (
                       <div className="grid h-full place-items-center px-6 text-center">
                         <div className="grid gap-3">
-                          <p className="text-sm text-[var(--red)]">
+                          <p className="text-sm text-red">
                             {postDetailErrorMessage}
                           </p>
                           <Button
@@ -983,7 +983,7 @@ export function PostCard({
                     <div className="border-b border-b-neutral-900 pb-4 flex flex-col gap-2">
                       {hasPostDetailError ? (
                         <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-                          <p className="text-sm text-[var(--red)]">
+                          <p className="text-sm text-red">
                             {postDetailErrorMessage}
                           </p>
                           <Button
@@ -1064,7 +1064,7 @@ export function PostCard({
                       <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto">
                         {hasPostDetailError ? (
                           <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-                            <p className="text-sm text-[var(--red)]">
+                            <p className="text-sm text-red">
                               {postDetailErrorMessage}
                             </p>
                             <Button
@@ -1086,7 +1086,7 @@ export function PostCard({
                     <div className="mt-4 border-t border-t-neutral-900 pt-4">
                       {hasPostDetailError ? (
                         <div className="grid gap-3 rounded-[14px] border border-neutral-900 p-4">
-                          <p className="text-sm text-[var(--red)]">
+                          <p className="text-sm text-red">
                             {postDetailErrorMessage}
                           </p>
                           <Button
@@ -1179,7 +1179,7 @@ export function PostCard({
                         {isEmojiPickerOpen && !isPostDetailLoading && !hasPostDetailError ? (
                           <div
                             ref={emojiPickerRef}
-                            className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-[12px] border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
+                            className="absolute bottom-[calc(100%+10px)] left-0 z-30 overflow-hidden rounded-2xl border border-[rgba(126,145,183,0.24)] shadow-[0_16px_34px_rgba(0,0,0,0.5)]"
                           >
                             <EmojiPicker
                               onEmojiClick={handleEmojiClick}
@@ -1212,7 +1212,7 @@ export function PostCard({
                               <IoHappyOutline className="size-6" />
                             </Button>
 
-                            <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
+                            <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2 transition-[border-color,box-shadow] duration-200 focus-within:border-primary-200 focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                               <input
                                 type="text"
                                 aria-label="Add comment"
@@ -1267,7 +1267,7 @@ export function PostCard({
           setIsDeleteAlertOpen(open);
         }}
       >
-        <AlertDialogContent className="max-w-[440px] rounded-[20px] border border-[rgba(126,145,183,0.24)] bg-neutral-950 p-5 text-[var(--base-pure-white)] shadow-[0_24px_52px_rgba(0,0,0,0.55)] md:p-6">
+        <AlertDialogContent className="max-w-110 rounded-4xl border border-[rgba(126,145,183,0.24)] bg-neutral-950 p-5 text-base-pure-white shadow-[0_24px_52px_rgba(0,0,0,0.55)] md:p-6">
           <AlertDialogHeader className="text-left">
             <AlertDialogTitle className="text-lg font-bold text-white md:text-xl">
               Hapus post ini?
@@ -1289,7 +1289,7 @@ export function PostCard({
                 event.preventDefault();
                 handleDeletePost();
               }}
-              className="h-10 rounded-full bg-[var(--red)] px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
+              className="h-10 rounded-full bg-red px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
             >
               {isDeletePending ? "Menghapus..." : "Ya, Hapus"}
             </AlertDialogAction>
@@ -1310,7 +1310,7 @@ export function PostCard({
           }
         }}
       >
-        <AlertDialogContent className="max-w-[440px] rounded-[16px] border border-neutral-800 bg-neutral-950 p-5 text-[var(--base-pure-white)] md:p-6">
+        <AlertDialogContent className="max-w-110 rounded-3xl border border-neutral-800 bg-neutral-950 p-5 text-base-pure-white md:p-6">
           <AlertDialogHeader className="text-left">
             <AlertDialogTitle className="text-lg font-bold text-white md:text-xl">
               Hapus komentar ini?
@@ -1337,7 +1337,7 @@ export function PostCard({
                 event.preventDefault();
                 handleDeleteComment();
               }}
-              className="h-10 rounded-full bg-[var(--red)] px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
+              className="h-10 rounded-full bg-red px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
             >
               {isDeleteCommentPending ? "Menghapus..." : "Ya, Hapus"}
             </AlertDialogAction>

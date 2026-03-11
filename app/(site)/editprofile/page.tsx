@@ -100,7 +100,7 @@ function ProfileField({
       <Label className="text-sm font-bold" htmlFor={id}>
         {label}
       </Label>
-      <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
+      <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 transition-[border-color,box-shadow] duration-200 focus-within:border-primary-200 focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
         <Input
           id={id}
           type={type}
@@ -128,7 +128,7 @@ class ApiError extends Error {
 function buildApiError(
   responseStatus: number,
   fallbackMessage: string,
-  responseBody?: { message?: string } | null
+  responseBody?: { message?: string } | null,
 ) {
   return new ApiError(responseBody?.message ?? fallbackMessage, responseStatus);
 }
@@ -154,7 +154,9 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
 }
 
 function isUnauthorizedError(error: unknown) {
-  return error instanceof ApiError && (error.status === 401 || error.status === 403);
+  return (
+    error instanceof ApiError && (error.status === 401 || error.status === 403)
+  );
 }
 
 function validateAvatar(file: File | null) {
@@ -237,7 +239,7 @@ export default function EditProfilePage() {
 
   const avatarPreviewUrl = useMemo(
     () => (avatarFile ? URL.createObjectURL(avatarFile) : null),
-    [avatarFile]
+    [avatarFile],
   );
 
   useEffect(() => {
@@ -431,7 +433,7 @@ export default function EditProfilePage() {
         <form onSubmit={handleSubmit} className="mt-4 md:mt-8">
           <div className="flex flex-col gap-8 md:grid md:grid-cols-[180px_minmax(0,1fr)] md:items-start md:gap-10">
             <div className="flex flex-col items-center gap-6 pt-2 md:pt-0">
-              <Avatar className="size-20 border border-[rgba(126,145,183,0.3)] md:size-[130px]">
+              <Avatar className="size-20 border border-[rgba(126,145,183,0.3)] md:size-32.5">
                 <AvatarImage src={avatarDisplaySrc} alt={formData.name} />
                 <AvatarFallback>{avatarFallbackText}</AvatarFallback>
               </Avatar>
@@ -450,7 +452,7 @@ export default function EditProfilePage() {
                 variant="ghost"
                 onClick={openAvatarPicker}
                 disabled={isSubmitDisabled}
-                className="h-10 md:h-12 w-40 rounded-full border border-neutral-900 px-6 font-bold text-sm md:text-md transition-all duration-200 ease-out hover:scale-[1.03] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]"
+                className="h-10 md:h-12 w-40 rounded-full border border-neutral-900 px-6 font-bold text-sm md:text-md transition-all duration-200 ease-out hover:scale-[1.03] hover:border-primary-300 hover:bg-primary-300 hover:text-base-pure-white hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]"
               >
                 Change Photo
               </Button>
@@ -468,7 +470,7 @@ export default function EditProfilePage() {
               ) : null}
 
               {avatarError ? (
-                <p className="text-center text-[14px] leading-[20px] font-medium text-[var(--red)]">
+                <p className="text-center text-sm  font-medium text-red">
                   {avatarError}
                 </p>
               ) : null}
@@ -517,14 +519,14 @@ export default function EditProfilePage() {
                 <Label className="text-sm font-bold" htmlFor="bio">
                   Bio
                 </Label>
-                <div className="flex min-h-[132px] items-start rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 py-3.5 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
+                <div className="flex min-h-33 items-start rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 py-3.5 transition-[border-color,box-shadow] duration-200 focus-within:border-primary-200 focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                   <Textarea
                     id="bio"
                     value={formData.bio}
                     onChange={updateField("bio")}
                     rows={4}
                     disabled={isSubmitDisabled}
-                    className="text-md h-full min-h-[104px] w-full resize-none border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
+                    className="text-md h-full min-h-26 w-full resize-none border-0 bg-transparent p-0 text-base-pure-white shadow-none placeholder:text-neutral-600 placeholder:font-semibold focus-visible:border-transparent focus-visible:ring-0"
                   />
                 </div>
               </div>

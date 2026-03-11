@@ -28,10 +28,10 @@ export function HomeBottomNav({
           asChild
           variant="ghost"
           className={cn(
-            "group h-auto min-w-[96px] rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-transparent",
+            "group h-auto min-w-24 rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-transparent",
             isHomeActive
-              ? "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
-              : "text-[var(--base-pure-white)] hover:text-[var(--base-pure-white)]",
+              ? "text-primary-200 hover:text-primary-200"
+              : "text-base-pure-white hover:text-base-pure-white",
           )}
         >
           <Link
@@ -49,7 +49,7 @@ export function HomeBottomNav({
             >
               <IoHome className="size-5 transition-transform duration-300 ease-out group-hover:scale-110 md:size-6" />
             </span>
-            <span className="text-xs font-bold transition-colors duration-300 ease-out group-hover:text-[var(--primary-300)] md:text-md">
+            <span className="text-xs font-bold transition-colors duration-300 ease-out group-hover:text-primary-300 md:text-md">
               Home
             </span>
           </Link>
@@ -59,7 +59,7 @@ export function HomeBottomNav({
           asChild
           size="icon"
           aria-label="Create post"
-          className="group size-11 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-[var(--base-pure-white)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.48)] md:size-12"
+          className="group size-11 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-base-pure-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.48)] md:size-12"
         >
           <Link href="/addpost" className="flex size-full items-center justify-center">
             <IoAdd className="size-7 transition-transform duration-300 ease-out group-hover:rotate-90 group-hover:scale-110" />
@@ -70,10 +70,10 @@ export function HomeBottomNav({
           asChild
           variant="ghost"
           className={cn(
-            "group h-auto min-w-[96px] rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-transparent",
+            "group h-auto min-w-24 rounded-full px-2 py-1 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-transparent",
             isProfileActive
-              ? "text-[var(--primary-200)] hover:text-[var(--primary-200)]"
-              : "text-[var(--base-pure-white)] hover:text-[var(--base-pure-white)]",
+              ? "text-primary-200 hover:text-primary-200"
+              : "text-base-pure-white hover:text-base-pure-white",
           )}
         >
           <Link
@@ -91,7 +91,7 @@ export function HomeBottomNav({
             >
               <IoPerson className="size-5 transition-transform duration-300 ease-out group-hover:scale-110 md:size-6" />
             </span>
-            <span className="text-xs font-bold transition-colors duration-300 ease-out group-hover:text-[var(--primary-300)] md:text-md">
+            <span className="text-xs font-bold transition-colors duration-300 ease-out group-hover:text-primary-300 md:text-md">
               Profile
             </span>
           </Link>

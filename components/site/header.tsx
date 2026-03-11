@@ -372,15 +372,13 @@ export function Header() {
       align="end"
       sideOffset={mobile ? 10 : 14}
       className={cn(
-        "w-[280px] overflow-hidden rounded-[20px] border border-[rgba(126,145,183,0.24)] bg-black p-0 text-[var(--base-pure-white)] shadow-[0_20px_44px_rgba(0,0,0,0.55)]",
-        mobile && "w-[260px]",
+        "w-70 overflow-hidden rounded-4xl border border-[rgba(126,145,183,0.24)] bg-black p-0 text-base-pure-white shadow-[0_20px_44px_rgba(0,0,0,0.55)]",
+        mobile && "w-65",
       )}
     >
       <div className="px-5 py-4">
-        <p className="truncate text-[20px] leading-[28px] font-bold">
-          {displayName}
-        </p>
-        <p className="mt-1 truncate text-[16px] leading-[24px] text-neutral-500">
+        <p className="truncate text-xl font-bold">{displayName}</p>
+        <p className="mt-1 truncate text-md text-neutral-500">
           @{profileUsername}
         </p>
       </div>
@@ -389,9 +387,9 @@ export function Header() {
 
       <DropdownMenuItem
         onSelect={handleOpenMyProfile}
-        className="h-14 cursor-pointer rounded-none px-5 text-[16px] leading-[24px] text-neutral-50 focus:bg-[rgba(126,145,183,0.14)] focus:text-white"
+        className="h-14 cursor-pointer rounded-none px-5 text-md text-neutral-50 focus:bg-[rgba(126,145,183,0.14)] focus:text-white"
       >
-        <IoPersonOutline className="size-[18px] text-neutral-500" />
+        <IoPersonOutline className="size-4.5 text-neutral-500" />
         <span>Profile</span>
       </DropdownMenuItem>
 
@@ -399,16 +397,16 @@ export function Header() {
 
       <DropdownMenuItem
         onSelect={handleLogout}
-        className="h-14 cursor-pointer rounded-none px-5 text-[16px] leading-[24px] text-[var(--red)] focus:bg-[rgba(255,51,51,0.14)] focus:text-[var(--red)] [&_svg]:text-[var(--red)]"
+        className="h-14 cursor-pointer rounded-none px-5 text-md text-red focus:bg-[rgba(255,51,51,0.14)] focus:text-red [&_svg]:text-red"
       >
-        <IoLogOutOutline className="size-[18px] hover:text-red-500" />
+        <IoLogOutOutline className="size-4.5 hover:text-red-500" />
         <span>Logout</span>
       </DropdownMenuItem>
     </DropdownMenuContent>
   );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
+    <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-base-pure-black text-base-pure-white">
       <div className="hidden h-20 items-center justify-between px-30 py-0 md:flex">
         <Link href="/home" className={brandLinkClassName}>
           <Image
@@ -427,7 +425,7 @@ export function Header() {
           ref={desktopSearchContainerRef}
         >
           <div className="relative w-full">
-            <IoSearchOutline className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[var(--neutral-500)]" />
+            <IoSearchOutline className="pointer-events-none absolute top-1/2 left-4 size-4.5 -translate-y-1/2 text-neutral-500" />
             <Input
               type="search"
               placeholder={
@@ -438,12 +436,12 @@ export function Header() {
               disabled={!isLoggedIn}
               onFocus={() => setIsDesktopSearchFocused(true)}
               onChange={(event) => setDesktopSearchInput(event.target.value)}
-              className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-[14px] leading-[20px] text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] transition-[border-color,box-shadow,transform] duration-200 ease-out focus:!border-[var(--primary-300)] focus-visible:!border-[var(--primary-300)] focus:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus-visible:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus:scale-[1.01] focus-visible:scale-[1.01]"
+              className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-sm text-base-pure-white shadow-none placeholder:text-neutral-500 transition-[border-color,box-shadow,transform] duration-200 ease-out focus:border-primary-300! focus-visible:border-primary-300! focus:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus-visible:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus:scale-[1.01] focus-visible:scale-[1.01]"
             />
 
             {showDesktopSearchDropdown ? (
-              <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-full overflow-hidden rounded-[20px] border border-[rgba(126,145,183,0.2)] bg-neutral-950 p-3 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
-                <div className="max-h-[360px] space-y-1 overflow-y-auto pr-1">
+              <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-full overflow-hidden rounded-4xl border border-[rgba(126,145,183,0.2)] bg-neutral-950 p-3 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+                <div className="max-h-90 space-y-1 overflow-y-auto pr-1">
                   {desktopSearchUsersQuery.isLoading ? (
                     Array.from({ length: 4 }).map((_, index) => (
                       <div
@@ -462,7 +460,7 @@ export function Header() {
                     ))
                   ) : desktopSearchUsersQuery.error ? (
                     <div className="rounded-[14px] border border-neutral-900 p-4">
-                      <p className="text-sm text-[var(--red)]">
+                      <p className="text-sm text-red">
                         {desktopSearchErrorMessage}
                       </p>
                     </div>
@@ -576,7 +574,7 @@ export function Header() {
                 onClick={handleBack}
                 className="size-8 rounded-full p-0 text-white hover:bg-[rgba(126,145,183,0.18)]"
               >
-                <IoArrowBackOutline className="size-[20px]" />
+                <IoArrowBackOutline className="size-5" />
               </Button>
               <span className="text-md font-bold">{profileTitle}</span>
             </div>
@@ -609,11 +607,11 @@ export function Header() {
               onClick={handleCloseMobileSearch}
               className="size-8 rounded-full p-0 text-white hover:bg-[rgba(126,145,183,0.18)]"
             >
-              <IoArrowBackOutline className="size-[20px]" />
+              <IoArrowBackOutline className="size-5" />
             </Button>
 
             <div className="relative flex-1">
-              <IoSearchOutline className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-[var(--neutral-500)]" />
+              <IoSearchOutline className="pointer-events-none absolute top-1/2 left-3.5 size-4.5 -translate-y-1/2 text-neutral-500" />
               <Input
                 type="search"
                 aria-label="Search users"
@@ -626,7 +624,7 @@ export function Header() {
 
                   setMobileSearchInput(event.target.value);
                 }}
-                className="h-10 rounded-full border-neutral-900 bg-neutral-950 px-3 pl-10 text-sm text-white shadow-none placeholder:text-neutral-500 transition-[border-color,box-shadow,transform] duration-200 ease-out focus:!border-[var(--primary-300)] focus-visible:!border-[var(--primary-300)] focus:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus-visible:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus:scale-[1.01] focus-visible:scale-[1.01]"
+                className="h-10 rounded-full border-neutral-900 bg-neutral-950 px-3 pl-10 text-sm text-white shadow-none placeholder:text-neutral-500 transition-[border-color,box-shadow,transform] duration-200 ease-out focus:border-primary-300! focus-visible:border-primary-300! focus:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus-visible:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus:scale-[1.01] focus-visible:scale-[1.01]"
               />
             </div>
           </div>
@@ -654,7 +652,7 @@ export function Header() {
                 className="size-5 text-neutral-25"
                 onClick={handleToggleMobileSearch}
               >
-                <IoSearchOutline className="size-[20px]" />
+                <IoSearchOutline className="size-5" />
               </Button>
 
               {isLoggedIn ? (
@@ -689,9 +687,9 @@ export function Header() {
                   }
                 >
                   {isMobileGuestMenuOpen ? (
-                    <IoCloseOutline className="size-[30px]" />
+                    <IoCloseOutline className="size-7.5" />
                   ) : (
-                    <IoMenuOutline className="size-[30px]" />
+                    <IoMenuOutline className="size-7.5" />
                   )}
                 </Button>
               )}

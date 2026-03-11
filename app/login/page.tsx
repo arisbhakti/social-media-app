@@ -209,7 +209,7 @@ export default function LoginPage() {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-53vh] left-1/2 h-[118vh] w-[164vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(70%_62%_at_50%_100%,rgba(164,120,255,0.88)_0%,rgba(132,86,249,0.72)_32%,rgba(101,57,220,0.5)_56%,rgba(62,33,154,0.22)_80%,rgba(42,20,109,0)_100%)] blur-[64px] md:bottom-[-47vh] md:h-[108vh] md:w-[148vw]"
+        className="pointer-events-none absolute bottom-[-53vh] left-1/2 h-[118vh] w-[164vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(70%_62%_at_50%_100%,rgba(164,120,255,0.88)_0%,rgba(132,86,249,0.72)_32%,rgba(101,57,220,0.5)_56%,rgba(62,33,154,0.22)_80%,rgba(42,20,109,0)_100%)] blur-3xl md:bottom-[-47vh] md:h-[108vh] md:w-[148vw]"
       />
       <div
         aria-hidden="true"
@@ -217,7 +217,7 @@ export default function LoginPage() {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[16vh] left-1/2 h-[66vh] w-[138vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(78%_82%_at_50%_42%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.9)_36%,rgba(0,0,0,0.38)_66%,rgba(0,0,0,0)_100%)] blur-[24px] md:bottom-[20vh] md:h-[60vh] md:w-[124vw]"
+        className="pointer-events-none absolute bottom-[16vh] left-1/2 h-[66vh] w-[138vw] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(78%_82%_at_50%_42%,rgba(0,0,0,0.99)_0%,rgba(0,0,0,0.9)_36%,rgba(0,0,0,0.38)_66%,rgba(0,0,0,0)_100%)] blur-xl md:bottom-[20vh] md:h-[60vh] md:w-[124vw]"
       />
 
       <main className="relative z-10 grid min-h-screen place-items-center px-6 py-8">

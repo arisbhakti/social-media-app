@@ -20,10 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
-import {
-  ApiError,
-  useCreatePostMutation,
-} from "@/lib/tanstack/post-queries";
+import { ApiError, useCreatePostMutation } from "@/lib/tanstack/post-queries";
 import { cn } from "@/lib/utils";
 
 const MAX_FILE_SIZE_IN_BYTES = 5 * 1024 * 1024;
@@ -195,7 +192,7 @@ export default function AddPostPage() {
 
   return (
     <main className="flex w-full flex-1 justify-center px-4 pt-0 pb-28 md:px-0 md:pb-32">
-      <section className="w-full max-w-[452px]">
+      <section className="w-full max-w-113">
         <div className="hidden items-center gap-3 md:flex">
           <Button
             type="button"
@@ -241,9 +238,7 @@ export default function AddPostPage() {
                 }}
                 className={cn(
                   "rounded-2xl border border-dashed bg-neutral-950 border-neutral-900 p-5 transition-colors",
-                  hasImagePreview
-                    ? "min-h-[400px] md:min-h-[530px]"
-                    : "min-h-[174px]",
+                  hasImagePreview ? "min-h-100 md:min-h-132.5" : "min-h-43.5",
                   photoError ? "border-red" : "border-[rgba(126,145,183,0.24)]",
                   isDraggingOver && !photoError
                     ? "border-[rgba(127,81,249,0.9)]"
@@ -272,7 +267,7 @@ export default function AddPostPage() {
                           event.stopPropagation();
                           openFilePicker();
                         }}
-                        className="h-[40px] rounded-[12px] bg-[rgba(20,31,52,0.88)] px-4 text-[16px] leading-[24px] font-medium text-[var(--base-pure-white)] hover:bg-[rgba(30,43,68,0.96)] hover:text-[var(--base-pure-white)]"
+                        className="h-10 rounded-2xl bg-[rgba(20,31,52,0.88)] px-4 text-[16px] font-medium text-base-pure-white hover:bg-[rgba(30,43,68,0.96)] hover:text-base-pure-white"
                       >
                         <IoCloudUploadOutline className="size-5" />
                         Change Image
@@ -285,7 +280,7 @@ export default function AddPostPage() {
                           event.stopPropagation();
                           handleDeleteImage();
                         }}
-                        className="h-[40px] rounded-[12px] bg-[rgba(20,31,52,0.88)] px-4 text-[16px] leading-[24px] font-medium text-[var(--red)] hover:bg-[rgba(30,43,68,0.96)] hover:text-[var(--red)]"
+                        className="h-10 rounded-2xl bg-[rgba(20,31,52,0.88)] px-4 text-[16px] font-medium text-red hover:bg-[rgba(30,43,68,0.96)] hover:text-red"
                       >
                         <IoTrashOutline className="size-5" />
                         Delete Image
@@ -293,21 +288,17 @@ export default function AddPostPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex h-full min-h-[132px] flex-col items-center justify-center gap-3 text-center">
-                    <span className="inline-flex size-[40px] items-center justify-center rounded-[10px] border border-[rgba(126,145,183,0.24)] bg-[rgba(8,22,42,0.88)]">
-                      <IoCloudUploadOutline className="size-5 text-[var(--base-pure-white)]" />
+                  <div className="flex h-full min-h-33 flex-col items-center justify-center gap-3 text-center">
+                    <span className="inline-flex size-10 items-center justify-center rounded-[10px] border border-[rgba(126,145,183,0.24)] bg-[rgba(8,22,42,0.88)]">
+                      <IoCloudUploadOutline className="size-5 text-base-pure-white" />
                     </span>
 
-                    <p className="text-[16px] leading-[24px] font-medium">
-                      <span className="text-[var(--primary-200)]">
-                        Click to upload
-                      </span>{" "}
-                      <span className="text-[var(--neutral-500)]">
-                        or drag and drop
-                      </span>
+                    <p className="text-md font-medium">
+                      <span className="text-primary-200">Click to upload</span>{" "}
+                      <span className="text-neutral-500">or drag and drop</span>
                     </p>
 
-                    <p className="text-[16px] leading-[24px] font-semibold text-[var(--neutral-500)]">
+                    <p className="text-md font-semibold text-neutral-500">
                       PNG or JPG (max. 5mb)
                     </p>
                   </div>
@@ -315,9 +306,7 @@ export default function AddPostPage() {
               </div>
 
               {photoError ? (
-                <p className="text-[14px] leading-[20px] font-medium text-[var(--red)]">
-                  {photoError}
-                </p>
+                <p className="text-sm font-medium text-red">{photoError}</p>
               ) : null}
             </div>
 
@@ -341,9 +330,7 @@ export default function AddPostPage() {
               />
 
               {captionError ? (
-                <p className="text-[14px] leading-[20px] font-medium text-[var(--red)]">
-                  {captionError}
-                </p>
+                <p className="text-sm font-medium text-red">{captionError}</p>
               ) : null}
             </div>
 

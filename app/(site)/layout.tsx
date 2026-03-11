@@ -10,15 +10,15 @@ export default function SiteLayout({
   children: ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
+    <div className="flex min-h-screen flex-col bg-base-pure-black text-base-pure-white">
       <Suspense
         fallback={
-          <div className="fixed inset-x-0 top-0 z-40 h-16 border-b border-[rgba(126,145,183,0.2)] bg-[var(--base-pure-black)] md:h-20" />
+          <div className="fixed inset-x-0 top-0 z-40 h-16 border-b border-[rgba(126,145,183,0.2)] bg-base-pure-black md:h-20" />
         }
       >
         <Header />
       </Suspense>
-      <div className="flex flex-1 flex-col pt-[80px] md:pt-[120px]">
+      <div className="flex flex-1 flex-col pt-20 md:pt-30">
         <PageTransition>{children}</PageTransition>
       </div>
       <SiteBottomNav />
