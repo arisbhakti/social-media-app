@@ -6,7 +6,6 @@ import { LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IoBookmarkOutline, IoClose } from "react-icons/io5";
 
-import { HomeBottomNav } from "@/components/site/home-bottom-nav";
 import { PostCard } from "@/components/site/post-card";
 import { FollowUserButton } from "@/components/site/post-card/follow-user-button";
 import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
@@ -860,8 +859,6 @@ export function MyProfilePage() {
         open={openConnectionsModal === "followers"}
         onOpenChange={(open) => setOpenConnectionsModal(open ? "followers" : null)}
       />
-
-      <HomeBottomNav activeTab="profile" />
     </main>
   );
 }

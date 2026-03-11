@@ -57,6 +57,7 @@ export default function LoginPage() {
   function fieldWrapperClass(hasError: boolean) {
     return cn(
       "flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 transition-[border-color,box-shadow] duration-200",
+      "focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]",
       hasError && "border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]"
     );
   }

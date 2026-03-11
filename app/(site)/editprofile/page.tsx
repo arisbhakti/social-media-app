@@ -98,7 +98,7 @@ function ProfileField({
       <Label className="text-sm font-bold" htmlFor={id}>
         {label}
       </Label>
-      <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5">
+      <div className="flex h-12 items-center rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
         <Input
           id={id}
           type={type}
@@ -510,7 +510,7 @@ export default function EditProfilePage() {
                 <Label className="text-sm font-bold" htmlFor="bio">
                   Bio
                 </Label>
-                <div className="flex min-h-[132px] items-start rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 py-3.5">
+                <div className="flex min-h-[132px] items-start rounded-[18px] border border-neutral-900 box-border bg-neutral-950 px-5 py-3.5 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                   <Textarea
                     id="bio"
                     value={formData.bio}

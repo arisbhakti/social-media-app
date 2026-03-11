@@ -2,6 +2,7 @@ import { Suspense, type ReactNode } from "react";
 
 import { PageTransition } from "@/components/providers/page-transition";
 import { Header } from "@/components/site/header";
+import { SiteBottomNav } from "@/components/site/site-bottom-nav";
 
 export default function SiteLayout({
   children,
@@ -20,6 +21,7 @@ export default function SiteLayout({
       <div className="flex flex-1 flex-col pt-[80px] md:pt-[120px]">
         <PageTransition>{children}</PageTransition>
       </div>
+      <SiteBottomNav />
     </div>
   );
 }

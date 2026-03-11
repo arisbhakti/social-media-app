@@ -10,7 +10,6 @@ import {
   IoHeartOutline,
 } from "react-icons/io5";
 
-import { HomeBottomNav } from "@/components/site/home-bottom-nav";
 import { PostCard } from "@/components/site/post-card";
 import { FollowUserButton } from "@/components/site/post-card/follow-user-button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -919,8 +918,6 @@ export function ProfilePage({ username }: ProfilePageProps) {
         open={openConnectionsModal === "followers"}
         onOpenChange={(open) => setOpenConnectionsModal(open ? "followers" : null)}
       />
-
-      <HomeBottomNav activeTab="profile" />
     </main>
   );
 }

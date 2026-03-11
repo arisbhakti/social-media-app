@@ -791,7 +791,7 @@ export function PostCard({
                       <IoHappyOutline className="size-6" />
                     </Button>
 
-                    <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3">
+                    <div className="flex h-12 flex-1 items-center rounded-[14px] border border-[rgba(126,145,183,0.2)] bg-transparent px-3 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                       <input
                         type="text"
                         aria-label="Add comment"
@@ -1110,7 +1110,7 @@ export function PostCard({
                               <IoHappyOutline className="size-6" />
                             </Button>
 
-                            <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2">
+                            <div className="flex h-12 flex-1 items-center rounded-[14px] border border-neutral-900 bg-neutral-950 px-4 py-2 transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--primary-200)] focus-within:shadow-[0_0_0_3px_rgba(127,81,249,0.28),0_14px_28px_rgba(105,54,242,0.24)]">
                               <input
                                 type="text"
                                 aria-label="Add comment"

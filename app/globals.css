@@ -36,6 +36,9 @@
   --primary-300: #6936f2;
   --primary-200: #7f51f9;
   --primary-100: #f6f9fe;
+  --text-input-focus-shadow:
+    0 0 0 3px rgba(127, 81, 249, 0.28),
+    0 14px 28px rgba(105, 54, 242, 0.24);
 
   --neutral-25: #fdfdfd;
   --neutral-50: #fafafa;
@@ -317,6 +320,46 @@ button:disabled,
 }
 
 @layer base {
+  :where(
+    input:not([type]):not([class*="border-0"]),
+    input[type="text"]:not([class*="border-0"]),
+    input[type="email"]:not([class*="border-0"]),
+    input[type="password"]:not([class*="border-0"]),
+    input[type="search"]:not([class*="border-0"]),
+    input[type="url"]:not([class*="border-0"]),
+    input[type="tel"]:not([class*="border-0"]),
+    input[type="number"]:not([class*="border-0"]),
+    textarea:not([class*="border-0"])
+  ) {
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  :where(
+      input:not([type]):not([class*="border-0"]),
+      input[type="text"]:not([class*="border-0"]),
+      input[type="email"]:not([class*="border-0"]),
+      input[type="password"]:not([class*="border-0"]),
+      input[type="search"]:not([class*="border-0"]),
+      input[type="url"]:not([class*="border-0"]),
+      input[type="tel"]:not([class*="border-0"]),
+      input[type="number"]:not([class*="border-0"]),
+      textarea:not([class*="border-0"])
+    ):focus,
+    :where(
+      input:not([type]):not([class*="border-0"]),
+      input[type="text"]:not([class*="border-0"]),
+      input[type="email"]:not([class*="border-0"]),
+      input[type="password"]:not([class*="border-0"]),
+      input[type="search"]:not([class*="border-0"]),
+      input[type="url"]:not([class*="border-0"]),
+      input[type="tel"]:not([class*="border-0"]),
+      input[type="number"]:not([class*="border-0"]),
+      textarea:not([class*="border-0"])
+    ):focus-visible {
+    border-color: var(--primary-200);
+    box-shadow: var(--text-input-focus-shadow);
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

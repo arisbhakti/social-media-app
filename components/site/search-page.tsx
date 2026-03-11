@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 
-import { HomeBottomNav } from "@/components/site/home-bottom-nav";
 import { FollowUserButton } from "@/components/site/post-card/follow-user-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -218,8 +217,6 @@ export function SearchPage() {
 
         <div ref={loadMoreRef} className="h-1 w-full" aria-hidden />
       </section>
-
-      <HomeBottomNav />
     </main>
   );
 }
