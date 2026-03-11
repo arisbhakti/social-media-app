@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -160,6 +160,31 @@ export default function LoginPage() {
     }
   }
 
+  function handleFormKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (
+      event.key !== "Enter" ||
+      event.shiftKey ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.nativeEvent.isComposing
+    ) {
+      return;
+    }
+
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+
+    const targetTagName = event.target.tagName;
+    if (targetTagName === "TEXTAREA" || targetTagName === "BUTTON") {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.requestSubmit();
+  }
+
   function renderFieldError(field: keyof LoginFormValues) {
     if (!formErrors[field]) {
       return null;
@@ -221,6 +246,7 @@ export default function LoginPage() {
           <form
             className="grid gap-5"
             onSubmit={handleSubmit}
+            onKeyDown={handleFormKeyDown}
             noValidate
             autoComplete="off"
           >

@@ -16,11 +16,7 @@ type QueryProviderProps = {
 };
 
 export function QueryProvider({ children }: QueryProviderProps) {
-  const [store] = useState(() => {
-    const nextStore = makeStore();
-    nextStore.dispatch(syncAuthSession(getAuthSession()));
-    return nextStore;
-  });
+  const [store] = useState(() => makeStore());
   const [queryClient] = useState(
     () =>
       new QueryClient({

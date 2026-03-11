@@ -906,7 +906,7 @@ export function PostCard({
                             handleSubmitComment();
                           }
                         }}
-                        className="h-full min-w-0 flex-1 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none placeholder:text-[var(--neutral-500)]"
+                        className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] leading-[20px] text-[var(--base-pure-white)] outline-none focus-visible:border-transparent focus-visible:ring-0 placeholder:text-[var(--neutral-500)]"
                       />
 
                       <Button
@@ -1227,7 +1227,7 @@ export function PostCard({
                                     handleSubmitComment();
                                   }
                                 }}
-                                className="h-full min-w-0 flex-1 bg-transparent text-md text-white outline-none placeholder:text-neutral-600 font-medium"
+                                className="h-full min-w-0 flex-1 border-0 bg-transparent text-md text-white outline-none focus-visible:border-transparent focus-visible:ring-0 placeholder:text-neutral-600 font-medium"
                               />
 
                               <Button
