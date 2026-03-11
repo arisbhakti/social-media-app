@@ -31,6 +31,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showErrorToast, showSuccessToast } from "@/components/ui/app-toast";
 import {
   ApiError,
   type PostCommentItem,
@@ -282,6 +283,47 @@ export function PostCard({
     });
   };
 
+  const handleSharePost = async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set("postId", String(postId));
+    const normalizedUsername = authorUsername.trim();
+    const normalizedAuthorName = authorName.trim();
+    const shareText = normalizedUsername
+      ? `Lihat post @${normalizedUsername} di Sociality`
+      : normalizedAuthorName
+        ? `Lihat post ${normalizedAuthorName} di Sociality`
+        : "Lihat post di Sociality";
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Sociality Post",
+          text: shareText,
+          url: shareUrl.toString(),
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl.toString());
+        showSuccessToast("Link post berhasil disalin");
+        return;
+      }
+
+      showErrorToast("Browser tidak mendukung fitur share");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      showErrorToast("Gagal membagikan post");
+    }
+  };
+
   const handleCommentsOpenChange = (open: boolean) => {
     setIsCommentsOpen(open);
 
@@ -502,6 +544,7 @@ export function PostCard({
               <ActionButton
                 label="Share post"
                 count={0}
+                onClick={handleSharePost}
                 icon={
                   <Image
                     src="/icon-share.svg"
@@ -999,6 +1042,7 @@ export function PostCard({
                             <ModalActionStat
                               label="Total shares"
                               count={0}
+                              onClick={handleSharePost}
                               icon={
                                 <Image
                                   src="/icon-share.svg"
