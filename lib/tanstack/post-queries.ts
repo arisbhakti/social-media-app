@@ -338,6 +338,16 @@ type DeletePostSuccessResponse = {
   data: DeletePostData;
 };
 
+type DeletePostCommentData = {
+  deleted: boolean;
+};
+
+type DeletePostCommentSuccessResponse = {
+  success: true;
+  message: string;
+  data: DeletePostCommentData;
+};
+
 type FetchPostsParams = {
   page: number;
   limit: number;
@@ -395,6 +405,11 @@ type DeletePostVariables = {
   postId: number;
 };
 
+type DeletePostCommentVariables = {
+  postId: number;
+  commentId: number;
+};
+
 type ToggleFollowContext = {
   hasValidPostId: boolean;
   optimisticFollowingDelta: number;
@@ -423,6 +438,11 @@ type ToggleFollowMutationOptions = {
 };
 
 type CreateCommentMutationOptions = {
+  showToast?: boolean;
+  invalidatePosts?: boolean;
+};
+
+type DeleteCommentMutationOptions = {
   showToast?: boolean;
   invalidatePosts?: boolean;
 };
@@ -971,6 +991,18 @@ async function deletePost({
       method: "DELETE",
     },
     "Failed to delete post"
+  );
+}
+
+async function deletePostComment({
+  commentId,
+}: DeletePostCommentVariables): Promise<DeletePostCommentSuccessResponse> {
+  return requestApi<DeletePostCommentData>(
+    `/api/comments/${commentId}`,
+    {
+      method: "DELETE",
+    },
+    "Failed to delete comment"
   );
 }
 
@@ -1967,6 +1999,57 @@ export function useCreatePostCommentMutation(
       },
     }
   );
+}
+
+export function useDeletePostCommentMutation(
+  options: DeleteCommentMutationOptions = {}
+) {
+  const { showToast = true, invalidatePosts = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    DeletePostCommentSuccessResponse,
+    unknown,
+    DeletePostCommentVariables
+  >({
+    mutationKey: ["posts", "comments", "delete"],
+    mutationFn: deletePostComment,
+    onError: (error) => {
+      if (showToast) {
+        showErrorToast("Gagal menghapus komentar", {
+          description: getErrorMessage(
+            error,
+            "Terjadi kesalahan saat menghapus komentar."
+          ),
+        });
+      }
+    },
+    onSuccess: (result) => {
+      if (showToast) {
+        showSuccessToast(result.message);
+      }
+    },
+    onSettled: (_result, _error, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.postCommentsList(variables.postId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: postQueryKeys.postDetail(variables.postId),
+      });
+
+      if (invalidatePosts) {
+        queryClient.invalidateQueries({
+          queryKey: ["posts"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["me"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["users"],
+        });
+      }
+    },
+  });
 }
 
 export function useCreatePostMutation(

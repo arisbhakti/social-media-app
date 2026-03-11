@@ -673,10 +673,10 @@ export function ProfilePage({ username }: ProfilePageProps) {
                     });
                   }}
                   className={cn(
-                    "h-10 min-w-[130px] rounded-full px-8 text-sm font-bold md:h-12 md:text-md",
+                    "h-10 min-w-[130px] rounded-full px-8 text-sm font-bold md:h-12 md:text-md transition-all duration-200 ease-out hover:scale-[1.03] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]",
                     profile.isFollowing
-                      ? "border border-neutral-900 bg-transparent hover:bg-transparent"
-                      : "bg-primary-300 text-white hover:bg-primary-200"
+                      ? "border border-neutral-900 bg-transparent text-[var(--base-pure-white)]"
+                      : "bg-primary-300 text-white"
                   )}
                 >
                   {profile.isFollowing ? (
@@ -694,7 +694,7 @@ export function ProfilePage({ username }: ProfilePageProps) {
                   size="icon"
                   aria-label="Share profile"
                   onClick={handleShareProfile}
-                  className="size-10 rounded-full border border-neutral-900 bg-transparent md:size-12"
+                  className="size-10 md:size-12 rounded-full border border-neutral-900 bg-transparent transition-all duration-200 ease-out hover:scale-[1.06] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.96]"
                 >
                   <Image
                     src="/icon-share.svg"
@@ -724,10 +724,10 @@ export function ProfilePage({ username }: ProfilePageProps) {
                   });
                 }}
                 className={cn(
-                  "h-10 flex-1 rounded-full text-sm font-bold",
+                  "h-10 flex-1 rounded-full text-sm font-bold transition-all duration-200 ease-out hover:scale-[1.03] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]",
                   profile.isFollowing
-                    ? "border border-neutral-900 bg-transparent hover:bg-transparent"
-                    : "bg-primary-300 text-white hover:bg-primary-200"
+                    ? "border border-neutral-900 bg-transparent text-[var(--base-pure-white)]"
+                    : "bg-primary-300 text-white"
                 )}
               >
                 {profile.isFollowing ? (
@@ -745,7 +745,7 @@ export function ProfilePage({ username }: ProfilePageProps) {
                 size="icon"
                 aria-label="Share profile"
                 onClick={handleShareProfile}
-                className="size-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] hover:bg-transparent"
+                className="size-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] transition-all duration-200 ease-out hover:scale-[1.06] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.96]"
               >
                 <Image
                   src="/icon-share.svg"

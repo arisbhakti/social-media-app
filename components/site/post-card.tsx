@@ -46,6 +46,7 @@ import {
   ApiError,
   type PostCommentItem,
   useCreatePostCommentMutation,
+  useDeletePostCommentMutation,
   useDeletePostMutation,
   usePostCommentsQuery,
   usePostDetailQuery,
@@ -145,15 +146,22 @@ function ModalActionStatsSkeleton() {
   );
 }
 
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
 function mapCommentItem(comment: PostCommentItem): CommentItem {
-  const authorName = comment.author.name.trim() || comment.author.username || "Unknown";
+  const normalizedAuthorName = normalizeString(comment.author?.name).trim();
+  const normalizedAuthorUsername = normalizeString(comment.author?.username).trim();
+  const authorName = normalizedAuthorName || normalizedAuthorUsername || "Unknown";
 
   return {
     id: comment.id,
+    authorId: comment.author?.id ?? 0,
     name: authorName,
-    username: comment.author.username,
-    avatarUrl: comment.author.avatarUrl,
-    content: comment.text,
+    username: normalizedAuthorUsername,
+    avatarUrl: comment.author?.avatarUrl ?? null,
+    content: normalizeString(comment.text),
     createdAt: formatRelativeTime(comment.createdAt),
     isMine: Boolean(comment.isMine),
   };
@@ -179,8 +187,19 @@ export function PostCard({
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [isDeleteCommentAlertOpen, setIsDeleteCommentAlertOpen] =
+    useState(false);
+  const [selectedComment, setSelectedComment] = useState<CommentItem | null>(
+    null
+  );
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
-  const [viewerUserId, setViewerUserId] = useState<number | null>(null);
+  const viewerUserId = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return getAuthSession()?.user?.id ?? null;
+  }, []);
   const [commentInput, setCommentInput] = useState("");
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -194,24 +213,34 @@ export function PostCard({
     () => commentsQuery.data?.data.comments.map(mapCommentItem) ?? [],
     [commentsQuery.data],
   );
+  const safeAuthorName = normalizeString(authorName);
+  const safeAuthorUsername = normalizeString(authorUsername);
+  const safeCaption = normalizeString(caption);
+  const safeCreatedAtLabel = normalizeString(createdAtLabel) || "Just now";
+  const safePostAuthorName = safeAuthorName.trim() || "Unknown";
+  const safePostAuthorUsername = safeAuthorUsername.trim();
   const modalAuthorName =
-    modalPostDetail?.author.name.trim() ||
-    modalPostDetail?.author.username ||
-    authorName;
-  const modalAuthorUsername = modalPostDetail?.author.username || authorUsername;
+    normalizeString(modalPostDetail?.author.name).trim() ||
+    normalizeString(modalPostDetail?.author.username).trim() ||
+    safePostAuthorName;
+  const modalAuthorUsername =
+    normalizeString(modalPostDetail?.author.username).trim() ||
+    safePostAuthorUsername;
   const modalAuthorAvatarUrl = modalPostDetail?.author.avatarUrl ?? authorAvatarUrl;
-  const modalCaption = modalPostDetail?.caption ?? caption;
+  const modalCaption = modalPostDetail
+    ? normalizeString(modalPostDetail.caption)
+    : safeCaption;
   const modalCaptionText = modalCaption.trim() || "-";
   const modalCreatedAtLabel = modalPostDetail
     ? formatRelativeTime(modalPostDetail.createdAt)
-    : createdAtLabel;
+    : safeCreatedAtLabel;
   const modalLikeCount = modalPostDetail?.likeCount ?? likeCount;
   const modalCommentCount = modalPostDetail?.commentCount ?? commentCount;
   const modalLiked = modalPostDetail?.likedByMe ?? liked;
   const modalSaved = modalPostDetail?.savedByMe ?? saved;
   const modalImageSrc = modalPostDetail?.imageUrl ?? imageSrc;
-  const cardAvatarFallback = authorName.trim().charAt(0).toUpperCase() || "U";
-  const modalAvatarFallback = modalAuthorName.trim().charAt(0).toUpperCase() || "U";
+  const cardAvatarFallback = safePostAuthorName.charAt(0).toUpperCase() || "U";
+  const modalAvatarFallback = modalAuthorName.charAt(0).toUpperCase() || "U";
   const isPostDetailLoading =
     postDetailQuery.isLoading || (postDetailQuery.isFetching && !modalPostDetail);
   const hasPostDetailError = Boolean(postDetailQuery.error) && !modalPostDetail;
@@ -219,7 +248,7 @@ export function PostCard({
     createPostCommentMutation.isPending &&
     createPostCommentMutation.variables?.postId === postId;
   const isPostDisabled = commentInput.trim().length === 0 || isCreateCommentPending;
-  const normalizedCaption = caption.trim() || "-";
+  const normalizedCaption = safeCaption.trim() || "-";
   const hasLongCaption = normalizedCaption.length > 140;
   const visibleCaption =
     hasLongCaption && !isCaptionExpanded
@@ -228,6 +257,9 @@ export function PostCard({
   const togglePostLikeMutation = useTogglePostLikeMutation();
   const togglePostSaveMutation = useTogglePostSaveMutation();
   const deletePostMutation = useDeletePostMutation({
+    showToast: true,
+  });
+  const deletePostCommentMutation = useDeletePostCommentMutation({
     showToast: true,
   });
   const isLikePending =
@@ -239,11 +271,15 @@ export function PostCard({
   const isDeletePending =
     deletePostMutation.isPending &&
     deletePostMutation.variables?.postId === postId;
+  const isDeleteCommentPending =
+    deletePostCommentMutation.isPending &&
+    deletePostCommentMutation.variables?.postId === postId;
   const canDeletePost = Boolean(
     modalPostDetail &&
       viewerUserId !== null &&
       modalPostDetail.author.id === viewerUserId
   );
+  const canDeleteAllComments = canDeletePost;
   const commentsTotalCount =
     commentsQuery.data?.data.pagination.total ?? modalCommentCount;
   const commentsErrorMessage =
@@ -301,8 +337,8 @@ export function PostCard({
 
     const shareUrl = new URL(window.location.href);
     shareUrl.searchParams.set("postId", String(postId));
-    const normalizedUsername = authorUsername.trim();
-    const normalizedAuthorName = authorName.trim();
+    const normalizedUsername = safePostAuthorUsername;
+    const normalizedAuthorName = safePostAuthorName;
     const shareText = normalizedUsername
       ? `Lihat post @${normalizedUsername} di Sociality`
       : normalizedAuthorName
@@ -341,6 +377,8 @@ export function PostCard({
     if (!open) {
       setIsEmojiPickerOpen(false);
       setIsDeleteAlertOpen(false);
+      setIsDeleteCommentAlertOpen(false);
+      setSelectedComment(null);
     }
   };
 
@@ -394,9 +432,45 @@ export function PostCard({
     );
   };
 
-  useEffect(() => {
-    setViewerUserId(getAuthSession()?.user?.id ?? null);
-  }, []);
+  const canDeleteComment = (comment: CommentItem) => {
+    if (canDeleteAllComments) {
+      return true;
+    }
+
+    if (viewerUserId === null) {
+      return false;
+    }
+
+    return comment.isMine === true || comment.authorId === viewerUserId;
+  };
+
+  const handleDeleteCommentRequest = (comment: CommentItem) => {
+    if (!canDeleteComment(comment) || isDeleteCommentPending) {
+      return;
+    }
+
+    setSelectedComment(comment);
+    setIsDeleteCommentAlertOpen(true);
+  };
+
+  const handleDeleteComment = () => {
+    if (!selectedComment || isDeleteCommentPending) {
+      return;
+    }
+
+    deletePostCommentMutation.mutate(
+      {
+        postId,
+        commentId: selectedComment.id,
+      },
+      {
+        onSuccess: () => {
+          setIsDeleteCommentAlertOpen(false);
+          setSelectedComment(null);
+        },
+      }
+    );
+  };
 
   useEffect(() => {
     if (!isEmojiPickerOpen) {
@@ -454,7 +528,16 @@ export function PostCard({
   ) : (
     <div className="grid gap-4 pr-1">
       {comments.map((comment) => (
-        <CommentRow key={comment.id} item={comment} />
+        <CommentRow
+          key={comment.id}
+          item={comment}
+          canDelete={canDeleteComment(comment)}
+          isDeletePending={
+            isDeleteCommentPending &&
+            deletePostCommentMutation.variables?.commentId === comment.id
+          }
+          onDelete={handleDeleteCommentRequest}
+        />
       ))}
     </div>
   );
@@ -501,20 +584,22 @@ export function PostCard({
           <div className="flex items-center gap-2 md:gap-3">
             <button
               type="button"
-              onClick={() => handleOpenAuthorProfile(authorUsername)}
+              onClick={() => handleOpenAuthorProfile(safePostAuthorUsername)}
               className="flex items-center gap-2 text-left transition-opacity hover:opacity-90 md:gap-3"
             >
               <Avatar className="size-11 border border-[rgba(126,145,183,0.32)] md:size-16">
                 <AvatarImage
                   src={authorAvatarUrl ?? "/dummy-profile-image.png"}
-                  alt={authorName}
+                  alt={safePostAuthorName}
                 />
                 <AvatarFallback>{cardAvatarFallback}</AvatarFallback>
               </Avatar>
               <div className="grid gap-0">
-                <span className="text-sm font-bold md:text-md">{authorName}</span>
+                <span className="text-sm font-bold md:text-md">
+                  {safePostAuthorName}
+                </span>
                 <span className="text-xs text-neutral-400 md:text-sm">
-                  {createdAtLabel}
+                  {safeCreatedAtLabel}
                 </span>
               </div>
             </button>
@@ -599,10 +684,10 @@ export function PostCard({
           <div className="grid gap-0 md:gap-1">
             <button
               type="button"
-              onClick={() => handleOpenAuthorProfile(authorUsername)}
+              onClick={() => handleOpenAuthorProfile(safePostAuthorUsername)}
               className="w-fit text-left text-sm font-bold transition-opacity hover:opacity-90 md:text-md"
             >
-              {authorName}
+              {safePostAuthorName}
             </button>
             <p className="text-sm md:text-md text-neutral-25">{visibleCaption}</p>
             {hasLongCaption ? (
@@ -1213,6 +1298,54 @@ export function PostCard({
               className="h-10 rounded-full bg-[var(--red)] px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
             >
               {isDeletePending ? "Menghapus..." : "Ya, Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isDeleteCommentAlertOpen}
+        onOpenChange={(open) => {
+          if (isDeleteCommentPending) {
+            return;
+          }
+
+          setIsDeleteCommentAlertOpen(open);
+          if (!open) {
+            setSelectedComment(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-[440px] rounded-[16px] border border-neutral-800 bg-neutral-950 p-5 text-[var(--base-pure-white)] md:p-6">
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle className="text-lg font-bold text-white md:text-xl">
+              Hapus komentar ini?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-neutral-400">
+              Komentar akan dihapus permanen dan tidak bisa dikembalikan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {selectedComment ? (
+            <p className="rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200">
+              &ldquo;{selectedComment.content}&rdquo;
+            </p>
+          ) : null}
+          <AlertDialogFooter className="mt-2 gap-3">
+            <AlertDialogCancel
+              disabled={isDeleteCommentPending}
+              className="mt-0 h-10 rounded-full border border-neutral-700 bg-transparent px-5 text-sm font-bold text-white hover:bg-neutral-900 hover:text-white"
+            >
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleteCommentPending}
+              onClick={(event) => {
+                event.preventDefault();
+                handleDeleteComment();
+              }}
+              className="h-10 rounded-full bg-[var(--red)] px-5 text-sm font-bold text-white hover:bg-[#e02c2c]"
+            >
+              {isDeleteCommentPending ? "Menghapus..." : "Ya, Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

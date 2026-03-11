@@ -17,6 +17,7 @@ export type PostCardProps = {
 
 export type CommentItem = {
   id: number;
+  authorId: number;
   name: string;
   username?: string;
   avatarUrl?: string | null;
