@@ -461,7 +461,7 @@ export function Header() {
               disabled={!isLoggedIn}
               onFocus={() => setIsDesktopSearchFocused(true)}
               onChange={(event) => setDesktopSearchInput(event.target.value)}
-              className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-[14px] leading-[20px] text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] focus-visible:border-[rgba(126,145,183,0.48)] focus-visible:ring-0"
+              className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-[14px] leading-[20px] text-[var(--base-pure-white)] shadow-none placeholder:text-[var(--neutral-500)] transition-[border-color,box-shadow,transform] duration-200 ease-out focus:!border-[var(--primary-300)] focus-visible:!border-[var(--primary-300)] focus:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus-visible:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus:scale-[1.01] focus-visible:scale-[1.01]"
             />
 
             {showDesktopSearchDropdown ? (
@@ -649,7 +649,7 @@ export function Header() {
 
                   setMobileSearchInput(event.target.value);
                 }}
-                className="h-10 rounded-full border-neutral-900 bg-neutral-950 px-3 pl-10 text-sm text-white shadow-none placeholder:text-neutral-500 focus-visible:border-[rgba(126,145,183,0.48)] focus-visible:ring-0"
+                className="h-10 rounded-full border-neutral-900 bg-neutral-950 px-3 pl-10 text-sm text-white shadow-none placeholder:text-neutral-500 transition-[border-color,box-shadow,transform] duration-200 ease-out focus:!border-[var(--primary-300)] focus-visible:!border-[var(--primary-300)] focus:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus-visible:!shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)] focus:scale-[1.01] focus-visible:scale-[1.01]"
               />
             </div>
           </div>

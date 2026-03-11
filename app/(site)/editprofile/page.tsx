@@ -443,7 +443,7 @@ export default function EditProfilePage() {
                 variant="ghost"
                 onClick={openAvatarPicker}
                 disabled={isSubmitDisabled}
-                className="h-10 md:h-12 w-40 rounded-full border border-neutral-900 px-6 font-bold text-sm md:text-md"
+                className="h-10 md:h-12 w-40 rounded-full border border-neutral-900 px-6 font-bold text-sm md:text-md transition-all duration-200 ease-out hover:scale-[1.03] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]"
               >
                 Change Photo
               </Button>

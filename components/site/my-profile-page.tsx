@@ -601,7 +601,7 @@ export function MyProfilePage() {
         variant="ghost"
         onClick={() => router.push("/editprofile")}
         className={cn(
-          "h-10 md:h-12 rounded-full border border-neutral-900 bg-transparent font-bold text-sm md:text-md hover:bg-transparent",
+          "h-10 md:h-12 rounded-full border border-neutral-900 bg-transparent font-bold text-sm md:text-md transition-all duration-200 ease-out hover:scale-[1.03] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.98]",
           widthClass
         )}
       >
@@ -660,7 +660,7 @@ export function MyProfilePage() {
                   size="icon"
                   aria-label="Share profile"
                   onClick={handleShareProfile}
-                  className="size-10 md:size-12 rounded-full border border-neutral-900 bg-transparent"
+                  className="size-10 md:size-12 rounded-full border border-neutral-900 bg-transparent transition-all duration-200 ease-out hover:scale-[1.06] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.96]"
                 >
                   <Image
                     src="/icon-share.svg"
@@ -681,7 +681,7 @@ export function MyProfilePage() {
                 size="icon"
                 aria-label="Share profile"
                 onClick={handleShareProfile}
-                className="size-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] hover:bg-transparent"
+                className="size-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] transition-all duration-200 ease-out hover:scale-[1.06] hover:border-[var(--primary-300)] hover:bg-[var(--primary-300)] hover:text-[var(--base-pure-white)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.35)] active:scale-[0.96]"
               >
                 <Image
                   src="/icon-share.svg"
