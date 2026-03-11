@@ -126,6 +126,7 @@ export function Header() {
   const dispatch = useAppDispatch();
   const authUser = useAppSelector((state) => state.auth.user);
   const isLoggedIn = useAppSelector((state) => Boolean(state.auth.token));
+  const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -152,6 +153,10 @@ export function Header() {
 
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [mobileSearchInput, setMobileSearchInput] = useState("");
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -240,10 +245,12 @@ export function Header() {
     };
   }, [isMobileSearchContextRoute, isMobileSearchOpen]);
 
+  const isAuthenticated = isHydrated && isLoggedIn;
+
   const desktopSearchUsersQuery = useUserSearchInfiniteQuery(
     desktopSearchQuery,
     20,
-    isLoggedIn && desktopSearchQuery.length > 0,
+    isAuthenticated && desktopSearchQuery.length > 0,
   );
   const toggleFollowMutation = useToggleFollowMutation();
 
@@ -269,7 +276,7 @@ export function Header() {
   }, [desktopSearchUsersQuery.data]);
 
   const showDesktopSearchDropdown =
-    isLoggedIn &&
+    isAuthenticated &&
     isDesktopSearchFocused &&
     desktopSearchInput.trim().length > 0;
   const desktopSearchErrorMessage = getErrorMessage(
@@ -328,7 +335,7 @@ export function Header() {
   };
 
   const handleToggleMobileSearch = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       return;
     }
 
@@ -429,11 +436,11 @@ export function Header() {
             <Input
               type="search"
               placeholder={
-                isLoggedIn ? "Search users" : "Login to search users"
+                isAuthenticated ? "Search users" : "Login to search users"
               }
               aria-label="Search users"
               value={desktopSearchInput}
-              disabled={!isLoggedIn}
+              disabled={!isAuthenticated}
               onFocus={() => setIsDesktopSearchFocused(true)}
               onChange={(event) => setDesktopSearchInput(event.target.value)}
               className="h-12 rounded-full border-neutral-900 bg-neutral-950 px-4 pl-11 text-sm text-base-pure-white shadow-none placeholder:text-neutral-500 transition-[border-color,box-shadow,transform] duration-200 ease-out focus:border-primary-300! focus-visible:border-primary-300! focus:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus-visible:shadow-[0_0_0_3px_rgba(105,54,242,0.28),0_14px_30px_rgba(105,54,242,0.32)]! focus:scale-[1.01] focus-visible:scale-[1.01]"
@@ -536,7 +543,7 @@ export function Header() {
           </div>
         </div>
 
-        {isLoggedIn ? (
+        {isAuthenticated ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -563,7 +570,7 @@ export function Header() {
       </div>
 
       <div className="flex h-16 items-center justify-between px-4 py-0 md:hidden">
-        {isProfileRoute && isLoggedIn ? (
+        {isProfileRoute && isAuthenticated ? (
           <>
             <div className="flex min-w-0 items-center gap-2">
               <Button
@@ -648,14 +655,14 @@ export function Header() {
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Open search"
-                disabled={!isLoggedIn}
+                disabled={!isAuthenticated}
                 className="size-5 text-neutral-25"
                 onClick={handleToggleMobileSearch}
               >
                 <IoSearchOutline className="size-5" />
               </Button>
 
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -698,7 +705,7 @@ export function Header() {
         )}
       </div>
 
-      {!isLoggedIn ? (
+      {!isAuthenticated ? (
         <div
           className={cn(
             "px-4 pb-4 transition-all duration-200 md:hidden",
