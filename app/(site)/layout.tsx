@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 
+import { PageTransition } from "@/components/providers/page-transition";
 import { Header } from "@/components/site/header";
 
 export default function SiteLayout({
@@ -17,7 +18,7 @@ export default function SiteLayout({
         <Header />
       </Suspense>
       <div className="flex flex-1 flex-col pt-[80px] md:pt-[120px]">
-        {children}
+        <PageTransition>{children}</PageTransition>
       </div>
     </div>
   );
