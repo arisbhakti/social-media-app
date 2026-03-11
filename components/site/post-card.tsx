@@ -11,11 +11,11 @@ import {
   IoBookmarkOutline,
   IoChatbubbleOutline,
   IoClose,
-  IoEllipsisHorizontal,
   IoHappyOutline,
   IoHeart,
   IoHeartOutline,
   IoPaperPlaneOutline,
+  IoTrashOutline,
 } from "react-icons/io5";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,11 +37,13 @@ import {
   ApiError,
   type PostCommentItem,
   useCreatePostCommentMutation,
+  useDeletePostMutation,
   usePostCommentsQuery,
   usePostDetailQuery,
   useTogglePostLikeMutation,
   useTogglePostSaveMutation,
 } from "@/lib/tanstack/post-queries";
+import { getAuthSession } from "@/lib/auth-session";
 import { cn } from "@/lib/utils";
 
 const EmojiPicker = dynamic(
@@ -168,6 +170,7 @@ export function PostCard({
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
+  const [viewerUserId, setViewerUserId] = useState<number | null>(null);
   const [commentInput, setCommentInput] = useState("");
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const emojiButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -214,12 +217,23 @@ export function PostCard({
       : normalizedCaption;
   const togglePostLikeMutation = useTogglePostLikeMutation();
   const togglePostSaveMutation = useTogglePostSaveMutation();
+  const deletePostMutation = useDeletePostMutation({
+    showToast: true,
+  });
   const isLikePending =
     togglePostLikeMutation.isPending &&
     togglePostLikeMutation.variables?.postId === postId;
   const isSavePending =
     togglePostSaveMutation.isPending &&
     togglePostSaveMutation.variables?.postId === postId;
+  const isDeletePending =
+    deletePostMutation.isPending &&
+    deletePostMutation.variables?.postId === postId;
+  const canDeletePost = Boolean(
+    modalPostDetail &&
+      viewerUserId !== null &&
+      modalPostDetail.author.id === viewerUserId
+  );
   const commentsTotalCount =
     commentsQuery.data?.data.pagination.total ?? modalCommentCount;
   const commentsErrorMessage =
@@ -302,6 +316,33 @@ export function PostCard({
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setCommentInput((prevValue) => `${prevValue}${emojiData.emoji}`);
   };
+
+  const handleDeletePost = () => {
+    if (!canDeletePost || isDeletePending) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      "Apakah kamu yakin ingin menghapus post ini?\nPilih OK untuk Ya, atau Cancel untuk Tidak."
+    );
+    if (!shouldDelete) {
+      return;
+    }
+
+    deletePostMutation.mutate(
+      { postId },
+      {
+        onSuccess: () => {
+          handleCommentsOpenChange(false);
+          setIsLikesOpen(false);
+        },
+      }
+    );
+  };
+
+  useEffect(() => {
+    setViewerUserId(getAuthSession()?.user?.id ?? null);
+  }, []);
 
   useEffect(() => {
     if (!isEmojiPickerOpen) {
@@ -828,15 +869,19 @@ export function PostCard({
                               </div>
                             </button>
 
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label="More options"
-                              className="size-6 rounded-full p-0 hover:bg-transparent"
-                            >
-                              <IoEllipsisHorizontal className="size-6" />
-                            </Button>
+                            {canDeletePost ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Delete post"
+                                onClick={handleDeletePost}
+                                disabled={isDeletePending}
+                                className="size-6 rounded-full p-0 hover:bg-transparent disabled:opacity-70"
+                              >
+                                <IoTrashOutline className="size-6" />
+                              </Button>
+                            ) : null}
                           </div>
 
                           <p className="text-sm text-neutral-25">{modalCaptionText}</p>

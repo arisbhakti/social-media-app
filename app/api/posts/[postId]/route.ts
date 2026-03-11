@@ -101,3 +101,51 @@ export async function GET(request: Request, context: RouteContext) {
     return toApiError("Unable to reach post detail service", 500);
   }
 }
+
+export async function DELETE(request: Request, context: RouteContext) {
+  const baseApiUrl = process.env.BASE_API_URL;
+  if (!baseApiUrl) {
+    return toApiError("BASE_API_URL is not configured", 500);
+  }
+
+  const authorization = request.headers.get("authorization");
+  if (!authorization) {
+    return toApiError("Unauthorized", 401);
+  }
+
+  const { postId: rawPostId } = await context.params;
+  const postId = toPositiveInt(rawPostId);
+  if (!postId) {
+    return toApiError("Invalid post id", 400);
+  }
+
+  try {
+    const response = await fetch(
+      `${baseApiUrl.replace(/\/+$/, "")}/api/posts/${postId}`,
+      {
+        method: "DELETE",
+        headers: {
+          accept: "*/*",
+          authorization,
+        },
+        cache: "no-store",
+      }
+    );
+
+    const responseBody = await parseJsonBody<unknown>(response);
+
+    if (responseBody && isApiResponse(responseBody)) {
+      return NextResponse.json(responseBody, {
+        status: response.status,
+      });
+    }
+
+    if (!response.ok) {
+      return toApiError("Failed to delete post", response.status);
+    }
+
+    return toApiError("Invalid response from delete post service", 502);
+  } catch {
+    return toApiError("Unable to reach delete post service", 500);
+  }
+}

@@ -328,6 +328,16 @@ type ToggleFollowSuccessResponse = {
   data: ToggleFollowData;
 };
 
+type DeletePostData = {
+  deleted: boolean;
+};
+
+type DeletePostSuccessResponse = {
+  success: true;
+  message: string;
+  data: DeletePostData;
+};
+
 type FetchPostsParams = {
   page: number;
   limit: number;
@@ -381,6 +391,10 @@ type CreatePostVariables = {
   image: File;
 };
 
+type DeletePostVariables = {
+  postId: number;
+};
+
 type ToggleFollowContext = {
   hasValidPostId: boolean;
   optimisticFollowingDelta: number;
@@ -414,6 +428,11 @@ type CreateCommentMutationOptions = {
 };
 
 type CreatePostMutationOptions = {
+  showToast?: boolean;
+  invalidatePosts?: boolean;
+};
+
+type DeletePostMutationOptions = {
   showToast?: boolean;
   invalidatePosts?: boolean;
 };
@@ -940,6 +959,18 @@ async function createPost({
       body: formData,
     },
     "Failed to create post"
+  );
+}
+
+async function deletePost({
+  postId,
+}: DeletePostVariables): Promise<DeletePostSuccessResponse> {
+  return requestApi<DeletePostData>(
+    `/api/posts/${postId}`,
+    {
+      method: "DELETE",
+    },
+    "Failed to delete post"
   );
 }
 
@@ -1994,6 +2025,61 @@ export function useCreatePostMutation(
 
       queryClient.invalidateQueries({
         queryKey: ["posts", "infinite"],
+      });
+    },
+  });
+}
+
+export function useDeletePostMutation(
+  options: DeletePostMutationOptions = {}
+) {
+  const { showToast = true, invalidatePosts = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation<DeletePostSuccessResponse, unknown, DeletePostVariables>({
+    mutationKey: ["posts", "delete"],
+    mutationFn: deletePost,
+    onError: (error) => {
+      if (showToast) {
+        showErrorToast("Gagal menghapus post", {
+          description: getErrorMessage(
+            error,
+            "Terjadi kesalahan saat menghapus post."
+          ),
+        });
+      }
+    },
+    onSuccess: (result, variables) => {
+      queryClient.removeQueries({
+        queryKey: postQueryKeys.postDetail(variables.postId),
+      });
+      queryClient.removeQueries({
+        queryKey: postQueryKeys.postCommentsList(variables.postId),
+      });
+
+      if (showToast) {
+        showSuccessToast(result.message);
+      }
+    },
+    onSettled: (_result, _error, variables) => {
+      if (!invalidatePosts) {
+        return;
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ["posts"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["me"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+      queryClient.removeQueries({
+        queryKey: postQueryKeys.postDetail(variables.postId),
+      });
+      queryClient.removeQueries({
+        queryKey: postQueryKeys.postCommentsList(variables.postId),
       });
     },
   });
