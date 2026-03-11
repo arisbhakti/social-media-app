@@ -61,7 +61,7 @@ export function HomeBottomNav({
           aria-label="Create post"
           className="group size-11 rounded-full bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] text-base-pure-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-105 hover:bg-[linear-gradient(180deg,#7f51f9_0%,#6936f2_100%)] hover:shadow-[0_14px_30px_rgba(105,54,242,0.48)] md:size-12"
         >
-          <Link href="/addpost" className="flex size-full items-center justify-center">
+          <Link href="/addpost">
             <IoAdd className="size-7 transition-transform duration-300 ease-out group-hover:rotate-90 group-hover:scale-110" />
           </Link>
         </Button>
