@@ -121,6 +121,7 @@ export function Header() {
     pathname.startsWith("/profile/");
   const profileTitle = getProfileTitle(pathname);
   const queryFromUrl = searchParams.get("q")?.trim() ?? "";
+  const isMobileSearchContextRoute = pathname === "/home" || pathname === "/search";
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [displayName, setDisplayName] = useState("John Doe");
@@ -197,6 +198,10 @@ export function Header() {
       return;
     }
 
+    if (!isMobileSearchContextRoute) {
+      return;
+    }
+
     const normalizedQuery = mobileSearchInput.trim();
     if (!normalizedQuery) {
       return;
@@ -213,7 +218,27 @@ export function Header() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [isMobileSearchOpen, mobileSearchInput, pathname, queryFromUrl, router]);
+  }, [
+    isMobileSearchContextRoute,
+    isMobileSearchOpen,
+    mobileSearchInput,
+    pathname,
+    queryFromUrl,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (!isMobileSearchOpen) {
+      return;
+    }
+
+    if (isMobileSearchContextRoute) {
+      return;
+    }
+
+    setIsMobileSearchOpen(false);
+    setMobileSearchInput("");
+  }, [isMobileSearchContextRoute, isMobileSearchOpen]);
 
   const desktopSearchUsersQuery = useUserSearchInfiniteQuery(
     desktopSearchQuery,
