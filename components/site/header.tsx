@@ -3,21 +3,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   IoArrowBackOutline,
   IoCloseOutline,
+  IoLogOutOutline,
   IoMenuOutline,
+  IoPersonOutline,
   IoSearchOutline,
 } from "react-icons/io5";
 
 import { FollowUserButton } from "@/components/site/post-card/follow-user-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAuthSession } from "@/lib/auth-session";
+import { clearAuthSession, getAuthSession } from "@/lib/auth-session";
 import {
   ApiError,
   useToggleFollowMutation,
@@ -80,7 +90,7 @@ function GuestActionButtons({
     <div
       className={cn(
         "flex items-center",
-        mobile ? "grid grid-cols-2 gap-3" : "gap-4"
+        mobile ? "grid grid-cols-2 gap-3" : "gap-4",
       )}
     >
       <Button
@@ -88,7 +98,7 @@ function GuestActionButtons({
         variant="ghost"
         className={cn(
           "rounded-full border border-neutral-900 bg-transparent font-bold hover:scale-[1.01] hover:border-neutral-800 active:scale-[0.99]",
-          mobile ? "h-10 w-full text-sm" : "h-11 min-w-32.5 px-8 text-md"
+          mobile ? "h-10 w-full text-sm" : "h-11 min-w-32.5 px-8 text-md",
         )}
       >
         <Link href="/login" onClick={onNavigate}>
@@ -99,7 +109,7 @@ function GuestActionButtons({
         asChild
         className={cn(
           "rounded-full bg-primary-300 font-bold hover:scale-[1.01] hover:bg-primary-200 hover:text-base-pure-white active:scale-[0.99]",
-          mobile ? "h-10 w-full text-sm" : "h-11 min-w-32.5 px-8 text-md"
+          mobile ? "h-10 w-full text-sm" : "h-11 min-w-32.5 px-8 text-md",
         )}
       >
         <Link href="/register" onClick={onNavigate}>
@@ -114,6 +124,7 @@ export function Header() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isProfileRoute =
     pathname === "/myprofile" ||
     pathname === "/editprofile" ||
@@ -121,10 +132,12 @@ export function Header() {
     pathname.startsWith("/profile/");
   const profileTitle = getProfileTitle(pathname);
   const queryFromUrl = searchParams.get("q")?.trim() ?? "";
-  const isMobileSearchContextRoute = pathname === "/home" || pathname === "/search";
+  const isMobileSearchContextRoute =
+    pathname === "/home" || pathname === "/search";
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [displayName, setDisplayName] = useState("John Doe");
+  const [username, setUsername] = useState("johndoe");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isMobileGuestMenuOpen, setIsMobileGuestMenuOpen] = useState(false);
 
@@ -142,12 +155,16 @@ export function Header() {
       if (!session?.token) {
         setIsLoggedIn(false);
         setDisplayName("John Doe");
+        setUsername("johndoe");
         setAvatarUrl(null);
         return;
       }
 
       setIsLoggedIn(true);
-      setDisplayName(session.user?.name || session.user?.username || "John Doe");
+      setDisplayName(
+        session.user?.name || session.user?.username || "John Doe",
+      );
+      setUsername(session.user?.username || "johndoe");
       setAvatarUrl(session.user?.avatarUrl ?? null);
     };
 
@@ -236,14 +253,20 @@ export function Header() {
       return;
     }
 
-    setIsMobileSearchOpen(false);
-    setMobileSearchInput("");
+    const frameId = window.requestAnimationFrame(() => {
+      setIsMobileSearchOpen(false);
+      setMobileSearchInput("");
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, [isMobileSearchContextRoute, isMobileSearchOpen]);
 
   const desktopSearchUsersQuery = useUserSearchInfiniteQuery(
     desktopSearchQuery,
     20,
-    isLoggedIn && desktopSearchQuery.length > 0
+    isLoggedIn && desktopSearchQuery.length > 0,
   );
   const toggleFollowMutation = useToggleFollowMutation();
 
@@ -269,10 +292,12 @@ export function Header() {
   }, [desktopSearchUsersQuery.data]);
 
   const showDesktopSearchDropdown =
-    isLoggedIn && isDesktopSearchFocused && desktopSearchInput.trim().length > 0;
+    isLoggedIn &&
+    isDesktopSearchFocused &&
+    desktopSearchInput.trim().length > 0;
   const desktopSearchErrorMessage = getErrorMessage(
     desktopSearchUsersQuery.error,
-    "Gagal mencari user"
+    "Gagal mencari user",
   );
   const activeFollowUserId = toggleFollowMutation.variables?.userId;
   const isMobileSearchActive = isMobileSearchOpen || pathname === "/search";
@@ -280,6 +305,15 @@ export function Header() {
     pathname === "/search" && !isMobileSearchOpen
       ? queryFromUrl
       : mobileSearchInput;
+  const profileUsername = username.trim().replace(/^@+/, "") || "johndoe";
+  const avatarFallback =
+    displayName
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0]?.toUpperCase() ?? "")
+      .join("") || "U";
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -333,6 +367,67 @@ export function Header() {
     setMobileSearchInput("");
   };
 
+  const handleOpenMyProfile = () => {
+    router.push("/myprofile");
+  };
+
+  const handleLogout = () => {
+    clearAuthSession();
+    queryClient.clear();
+    setIsLoggedIn(false);
+    setDisplayName("John Doe");
+    setUsername("johndoe");
+    setAvatarUrl(null);
+    setDesktopSearchInput("");
+    setDesktopSearchQuery("");
+    setIsDesktopSearchFocused(false);
+    setIsMobileSearchOpen(false);
+    setMobileSearchInput("");
+    setIsMobileGuestMenuOpen(false);
+    window.dispatchEvent(new Event("storage"));
+    router.replace("/login");
+  };
+
+  const renderProfileDropdownContent = (mobile = false) => (
+    <DropdownMenuContent
+      align="end"
+      sideOffset={mobile ? 10 : 14}
+      className={cn(
+        "w-[280px] overflow-hidden rounded-[20px] border border-[rgba(126,145,183,0.24)] bg-black p-0 text-[var(--base-pure-white)] shadow-[0_20px_44px_rgba(0,0,0,0.55)]",
+        mobile && "w-[260px]",
+      )}
+    >
+      <div className="px-5 py-4">
+        <p className="truncate text-[20px] leading-[28px] font-bold">
+          {displayName}
+        </p>
+        <p className="mt-1 truncate text-[16px] leading-[24px] text-neutral-500">
+          @{profileUsername}
+        </p>
+      </div>
+
+      <DropdownMenuSeparator className="my-0 bg-[rgba(126,145,183,0.2)]" />
+
+      <DropdownMenuItem
+        onSelect={handleOpenMyProfile}
+        className="h-14 cursor-pointer rounded-none px-5 text-[16px] leading-[24px] text-neutral-50 focus:bg-[rgba(126,145,183,0.14)] focus:text-white"
+      >
+        <IoPersonOutline className="size-[18px] text-neutral-500" />
+        <span>Profile</span>
+      </DropdownMenuItem>
+
+      <DropdownMenuSeparator className="my-0 bg-[rgba(126,145,183,0.2)]" />
+
+      <DropdownMenuItem
+        onSelect={handleLogout}
+        className="h-14 cursor-pointer rounded-none px-5 text-[16px] leading-[24px] text-[var(--red)] focus:bg-[rgba(255,51,51,0.14)] focus:text-[var(--red)] [&_svg]:text-[var(--red)]"
+      >
+        <IoLogOutOutline className="size-[18px] hover:text-red-500" />
+        <span>Logout</span>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  );
+
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex w-full flex-col bg-[var(--base-pure-black)] text-[var(--base-pure-white)]">
       <div className="hidden h-20 items-center justify-between px-30 py-0 md:flex">
@@ -350,12 +445,17 @@ export function Header() {
           <span className="display-xs leading-none font-bold">Sociality</span>
         </Link>
 
-        <div className="h-12 w-full max-w-122.75" ref={desktopSearchContainerRef}>
+        <div
+          className="h-12 w-full max-w-122.75"
+          ref={desktopSearchContainerRef}
+        >
           <div className="relative w-full">
             <IoSearchOutline className="pointer-events-none absolute top-1/2 left-4 size-[18px] -translate-y-1/2 text-[var(--neutral-500)]" />
             <Input
               type="search"
-              placeholder={isLoggedIn ? "Search users" : "Login to search users"}
+              placeholder={
+                isLoggedIn ? "Search users" : "Login to search users"
+              }
               aria-label="Search users"
               value={desktopSearchInput}
               disabled={!isLoggedIn}
@@ -385,16 +485,21 @@ export function Header() {
                     ))
                   ) : desktopSearchUsersQuery.error ? (
                     <div className="rounded-[14px] border border-neutral-900 p-4">
-                      <p className="text-sm text-[var(--red)]">{desktopSearchErrorMessage}</p>
+                      <p className="text-sm text-[var(--red)]">
+                        {desktopSearchErrorMessage}
+                      </p>
                     </div>
                   ) : desktopSearchUsers.length === 0 ? (
                     <div className="rounded-[14px] border border-neutral-900 p-4">
-                      <p className="text-sm text-neutral-400">User tidak ditemukan.</p>
+                      <p className="text-sm text-neutral-400">
+                        User tidak ditemukan.
+                      </p>
                     </div>
                   ) : (
                     desktopSearchUsers.map((user) => {
                       const isFollowPending =
-                        toggleFollowMutation.isPending && activeFollowUserId === user.id;
+                        toggleFollowMutation.isPending &&
+                        activeFollowUserId === user.id;
                       const avatarFallback =
                         user.name.trim().charAt(0).toUpperCase() || "U";
 
@@ -411,13 +516,19 @@ export function Header() {
                             <div className="flex min-w-0 items-center gap-2">
                               <Avatar className="size-11 border border-[rgba(126,145,183,0.24)]">
                                 <AvatarImage
-                                  src={user.avatarUrl ?? "/dummy-profile-image.png"}
+                                  src={
+                                    user.avatarUrl ?? "/dummy-profile-image.png"
+                                  }
                                   alt={user.name}
                                 />
-                                <AvatarFallback>{avatarFallback}</AvatarFallback>
+                                <AvatarFallback>
+                                  {avatarFallback}
+                                </AvatarFallback>
                               </Avatar>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-bold">{user.name}</p>
+                                <p className="truncate text-sm font-bold">
+                                  {user.name}
+                                </p>
                                 <p className="truncate text-sm text-neutral-400">
                                   @{user.username}
                                 </p>
@@ -451,16 +562,26 @@ export function Header() {
         </div>
 
         {isLoggedIn ? (
-          <div className="flex items-center gap-2">
-            <Avatar className="size-12 border border-[rgba(126,145,183,0.32)]">
-              <AvatarImage
-                src={avatarUrl ?? "/dummy-profile-image.png"}
-                alt={displayName}
-              />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <span className="text-md font-bold">{displayName}</span>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex cursor-pointer items-center gap-2 rounded-full px-1 py-1  hover:scale-[1.05] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(126,145,183,0.48)]"
+              >
+                <Avatar className="size-12 border border-[rgba(126,145,183,0.32)]">
+                  <AvatarImage
+                    src={avatarUrl ?? "/dummy-profile-image.png"}
+                    alt={displayName}
+                  />
+                  <AvatarFallback>{avatarFallback}</AvatarFallback>
+                </Avatar>
+                <span className="cursor-pointer text-md font-bold">
+                  {displayName}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            {renderProfileDropdownContent()}
+          </DropdownMenu>
         ) : (
           <GuestActionButtons />
         )}
@@ -483,13 +604,23 @@ export function Header() {
               <span className="text-md font-bold">{profileTitle}</span>
             </div>
 
-            <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
-              <AvatarImage
-                src={avatarUrl ?? "/dummy-profile-image.png"}
-                alt={displayName}
-              />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(126,145,183,0.48)]"
+                >
+                  <Avatar className="size-8 border border-[rgba(126,145,183,0.32)]">
+                    <AvatarImage
+                      src={avatarUrl ?? "/dummy-profile-image.png"}
+                      alt={displayName}
+                    />
+                    <AvatarFallback>{avatarFallback}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              {renderProfileDropdownContent(true)}
+            </DropdownMenu>
           </>
         ) : isMobileSearchActive ? (
           <div className="flex w-full items-center gap-2">
@@ -535,7 +666,9 @@ export function Header() {
                 height={30}
                 priority
               />
-              <span className="display-xs leading-none font-bold">Sociality</span>
+              <span className="display-xs leading-none font-bold">
+                Sociality
+              </span>
             </Link>
 
             <div className="flex items-center gap-4">
@@ -552,19 +685,31 @@ export function Header() {
               </Button>
 
               {isLoggedIn ? (
-                <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
-                  <AvatarImage
-                    src={avatarUrl ?? "/dummy-profile-image.png"}
-                    alt={displayName}
-                  />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(126,145,183,0.48)]"
+                    >
+                      <Avatar className="size-10 border border-[rgba(126,145,183,0.32)]">
+                        <AvatarImage
+                          src={avatarUrl ?? "/dummy-profile-image.png"}
+                          alt={displayName}
+                        />
+                        <AvatarFallback>{avatarFallback}</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  {renderProfileDropdownContent(true)}
+                </DropdownMenu>
               ) : (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={isMobileGuestMenuOpen ? "Close menu" : "Open menu"}
+                  aria-label={
+                    isMobileGuestMenuOpen ? "Close menu" : "Open menu"
+                  }
                   className="size-6 text-neutral-25"
                   onClick={() =>
                     setIsMobileGuestMenuOpen((previousState) => !previousState)
@@ -588,7 +733,7 @@ export function Header() {
             "px-4 pb-4 transition-all duration-200 md:hidden",
             isMobileGuestMenuOpen
               ? "max-h-28 opacity-100"
-              : "pointer-events-none max-h-0 overflow-hidden pb-0 opacity-0"
+              : "pointer-events-none max-h-0 overflow-hidden pb-0 opacity-0",
           )}
         >
           <GuestActionButtons
