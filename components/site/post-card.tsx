@@ -9,12 +9,10 @@ import { EmojiStyle, Theme, type EmojiClickData } from "emoji-picker-react";
 import {
   IoBookmark,
   IoBookmarkOutline,
-  IoChatbubbleOutline,
   IoClose,
   IoHappyOutline,
   IoHeart,
   IoHeartOutline,
-  IoPaperPlaneOutline,
   IoTrashOutline,
 } from "react-icons/io5";
 
@@ -491,12 +489,28 @@ export function PostCard({
                 label="Open comments"
                 count={commentsTotalCount}
                 onClick={handleOpenComments}
-                icon={<IoChatbubbleOutline className="size-6" />}
+                icon={
+                  <Image
+                    src="/icon-comment.svg"
+                    alt="Comment"
+                    width={24}
+                    height={24}
+                    className="size-6"
+                  />
+                }
               />
               <ActionButton
                 label="Share post"
                 count={0}
-                icon={<IoPaperPlaneOutline className="size-6" />}
+                icon={
+                  <Image
+                    src="/icon-share.svg"
+                    alt="Share"
+                    width={24}
+                    height={24}
+                    className="size-6"
+                  />
+                }
               />
             </div>
             <Button
@@ -649,7 +663,15 @@ export function PostCard({
                     <ModalActionStat
                       label="Total comments"
                       count={commentsTotalCount}
-                      icon={<IoChatbubbleOutline className="size-5" />}
+                      icon={
+                        <Image
+                          src="/icon-comment.svg"
+                          alt="Comment"
+                          width={20}
+                          height={20}
+                          className="size-5"
+                        />
+                      }
                     />
                   </div>
 
@@ -964,12 +986,28 @@ export function PostCard({
                             <ModalActionStat
                               label="Total comments"
                               count={commentsTotalCount}
-                              icon={<IoChatbubbleOutline className="size-6" />}
+                              icon={
+                                <Image
+                                  src="/icon-comment.svg"
+                                  alt="Comment"
+                                  width={24}
+                                  height={24}
+                                  className="size-6"
+                                />
+                              }
                             />
                             <ModalActionStat
                               label="Total shares"
                               count={0}
-                              icon={<IoPaperPlaneOutline className="size-6" />}
+                              icon={
+                                <Image
+                                  src="/icon-share.svg"
+                                  alt="Share"
+                                  width={24}
+                                  height={24}
+                                  className="size-6"
+                                />
+                              }
                             />
                           </div>
 

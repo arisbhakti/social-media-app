@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { IoBookmarkOutline, IoClose, IoPaperPlaneOutline } from "react-icons/io5";
+import { IoBookmarkOutline, IoClose } from "react-icons/io5";
 
 import { HomeBottomNav } from "@/components/site/home-bottom-nav";
 import { PostCard } from "@/components/site/post-card";
@@ -662,7 +663,13 @@ export function MyProfilePage() {
                   onClick={handleShareProfile}
                   className="size-10 md:size-12 rounded-full border border-neutral-900 bg-transparent"
                 >
-                  <IoPaperPlaneOutline className="size-5 md:size-6" />
+                  <Image
+                    src="/icon-share.svg"
+                    alt="Share"
+                    width={24}
+                    height={24}
+                    className="size-5 md:size-6"
+                  />
                 </Button>
               </div>
             </div>
@@ -677,7 +684,13 @@ export function MyProfilePage() {
                 onClick={handleShareProfile}
                 className="size-[42px] rounded-full border border-[rgba(126,145,183,0.2)] bg-transparent text-[var(--base-pure-white)] hover:bg-transparent"
               >
-                <IoPaperPlaneOutline className="size-[18px]" />
+                <Image
+                  src="/icon-share.svg"
+                  alt="Share"
+                  width={18}
+                  height={18}
+                  className="size-[18px]"
+                />
               </Button>
             </div>
 
